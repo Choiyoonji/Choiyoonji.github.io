@@ -38,13 +38,13 @@ keywords:              []
 # A (square) logo for your site.
 # If provided, it will be shown at the top of the sidebar.
 # It also used by the `jekyll-seo-tag` plugin.
-logo:                  /assets/img/logo.png
+logo:                  /assets/img/me.png
 
 # This should be the same author as first entry in `_data/authors.yml`.
 author:
   # Used by `jekyll-feed`:
-  name:                <Choi> <yoonji>
-  email:               <cyj21c6352@gmail.com>
+  name:                YoonJi Choi
+  email:             cyj21c6352@gmail.com
   # # Used by `jekyll-seo-tag`:
   # twitter:             <username>
 
@@ -81,15 +81,15 @@ paginate_path:         /:num/
 # Theme
 # ---------------------------------------------------------------------------------------
 
-theme: jekyll-theme-hydejack
-# remote_theme: hydecorp/hydejack@v9
+# theme: jekyll-theme-hydejack
+remote_theme: hydecorp/hydejack@v9
 
 
 # Customizaton
 # ----------------------------------------------------------------------------------------
  
 # Sidebar image and theme color of the site.
-accent_image:          /assets/img/sidebar-bg.jpg
+accent_image:          /assets/img/logo.jpg
 accent_color:          rgb(79,177,186)
 
 # This is used for the `theme-color` meta tag,
