@@ -1,4 +1,475 @@
----
-layout: home
-# Index page
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoon-Ji Choi — Robotics Researcher</title>
+<meta name="description" content="Yoon-Ji Choi – Robotics Researcher, Interactive Robotics Lab, Dongguk University. Robot Learning, Control, and Multimodal AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fdfdfc;
+  --text:#222;
+  --text-secondary:#444;
+  --text-light:#666;
+  --text-faint:#999;
+  --link:#1a4a8a;
+  --link-hover:#0d2e5e;
+  --rule:#ccc;
+  --rule-light:#e0e0e0;
+  --highlight:#fffde6;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Source Sans 3','Helvetica Neue',Helvetica,sans-serif;
+  --mono:'Source Code Pro','Courier New',monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--serif);font-size:16px;line-height:1.75;
+  -webkit-font-smoothing:auto;
+}
+::selection{background:#b3d4fc}
+a{color:var(--link);text-decoration:none;border-bottom:1px solid transparent;transition:border-color 0.2s}
+a:hover{border-bottom-color:var(--link)}
+
+/* ===== LAYOUT ===== */
+.page{
+  max-width:920px;margin:0 auto;
+  padding:60px 40px 80px;
+}
+
+/* ===== HEADER ===== */
+header{
+  padding-bottom:32px;margin-bottom:36px;
+  border-bottom:2px solid var(--text);
+}
+header h1{
+  font-family:var(--serif);font-size:1.85rem;font-weight:700;
+  letter-spacing:-0.3px;margin-bottom:4px;
+}
+header .subtitle{
+  font-family:var(--sans);font-size:1rem;
+  color:var(--text-secondary);font-weight:400;margin-bottom:16px;
+}
+header .contact-line{
+  font-family:var(--sans);font-size:0.88rem;color:var(--text-light);
+  display:flex;flex-wrap:wrap;gap:6px 24px;line-height:1.6;
+}
+header .contact-line a{color:var(--text-light);border-bottom:1px dotted var(--text-faint)}
+header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
+
+/* ===== NAV ===== */
+.page-nav{
+  font-family:var(--sans);font-size:0.85rem;
+  padding:12px 0;margin-bottom:40px;
+  border-bottom:1px solid var(--rule-light);
+  display:flex;flex-wrap:wrap;gap:8px 28px;
+}
+.page-nav a{
+  color:var(--text-light);text-transform:uppercase;letter-spacing:0.8px;
+  font-weight:500;font-size:0.78rem;
+}
+.page-nav a:hover{color:var(--link)}
+
+/* ===== SECTIONS ===== */
+.section{margin-bottom:44px}
+.section h2{
+  font-family:var(--sans);font-size:0.82rem;
+  font-weight:600;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--text);margin-bottom:16px;
+  padding-bottom:8px;border-bottom:1px solid var(--rule);
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main-layout{
+  display:grid;grid-template-columns:1fr 260px;gap:48px;
+  align-items:start;
+}
+.main-content{}
+.main-content .section{margin-bottom:44px}
+.sidebar-col{position:sticky;top:80px;align-self:start}
+.intro-text{font-size:0.98rem;color:var(--text-secondary);line-height:1.85}
+.intro-text p{margin-bottom:14px}
+.intro-text strong{color:var(--text);font-weight:600}
+
+.sidebar-info{
+  font-family:var(--sans);font-size:0.85rem;
+  border:1px solid var(--rule-light);padding:24px;
+  background:#fafaf8;
+}
+.sidebar-info .photo-placeholder{
+  width:100%;aspect-ratio:1;background:#eee;
+  margin-bottom:16px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-faint);font-size:0.8rem;border:1px solid var(--rule-light);
+}
+.sidebar-info dl{margin:0}
+.sidebar-info dt{
+  font-weight:600;font-size:0.75rem;text-transform:uppercase;
+  letter-spacing:0.8px;color:var(--text-faint);margin-top:12px;
+}
+.sidebar-info dd{color:var(--text-secondary);margin:2px 0 0;font-size:0.88rem}
+.sidebar-info dd a{font-size:0.85rem}
+
+/* ===== RESEARCH INTERESTS ===== */
+.interests{
+  font-family:var(--sans);font-size:0.92rem;
+  color:var(--text-secondary);line-height:1.8;
+}
+.interests ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px 0}
+.interests li{position:relative;padding-left:0}
+.interests li::after{content:' · ';color:var(--text-faint);padding:0 8px}
+.interests li:last-child::after{content:''}
+
+/* ===== EDUCATION ===== */
+.edu-item{
+  display:grid;grid-template-columns:1fr auto;gap:16px;
+  padding:10px 0;font-size:0.92rem;
+}
+.edu-item+.edu-item{border-top:1px solid var(--rule-light)}
+.edu-degree{font-weight:600;color:var(--text)}
+.edu-detail{color:var(--text-light);font-size:0.88rem}
+.edu-date{
+  font-family:var(--mono);font-size:0.8rem;color:var(--text-faint);
+  text-align:right;white-space:nowrap;padding-top:1px;
+}
+
+/* ===== PUBLICATIONS ===== */
+.pub-item{
+  padding:14px 0;font-size:0.92rem;line-height:1.7;
+  counter-increment:pub;
+}
+.pub-item+.pub-item{border-top:1px solid var(--rule-light)}
+.pub-item .pub-ref{
+  font-family:var(--mono);font-size:0.78rem;color:var(--text-faint);
+  margin-bottom:4px;
+}
+.pub-item .pub-title{font-weight:600;color:var(--text)}
+.pub-item .pub-title em{font-weight:600;font-style:normal}
+.pub-item .pub-authors{color:var(--text-secondary);font-size:0.88rem}
+.pub-item .pub-authors .me{font-weight:600;color:var(--text);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.pub-item .pub-venue{font-style:italic;color:var(--text-light);font-size:0.88rem}
+.pub-status{
+  display:inline-block;font-family:var(--sans);font-size:0.72rem;font-weight:600;
+  letter-spacing:0.5px;text-transform:uppercase;
+  padding:1px 7px;border-radius:2px;margin-left:4px;vertical-align:middle;
+}
+.pub-status.accepted{background:#e6f4ea;color:#1a7f37}
+.pub-status.review{background:#fff8e1;color:#8a6d00}
+.pub-status.preprint{background:#eef1f6;color:#3d5a8a}
+
+/* ===== PROJECTS ===== */
+.proj-item{
+  padding:14px 0;font-size:0.92rem;
+}
+.proj-item+.proj-item{border-top:1px solid var(--rule-light)}
+.proj-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:6px}
+.proj-name{font-weight:600;color:var(--text)}
+.proj-date{font-family:var(--mono);font-size:0.8rem;color:var(--text-faint);white-space:nowrap}
+.proj-tech{
+  font-family:var(--mono);font-size:0.78rem;color:var(--text-faint);
+  margin-bottom:6px;
+}
+.proj-desc{color:var(--text-secondary);font-size:0.9rem;line-height:1.75}
+.proj-desc ul{list-style:none;margin:0;padding:0}
+.proj-desc li{position:relative;padding-left:16px}
+.proj-desc li::before{
+  content:'\2013';position:absolute;left:0;color:var(--text-faint);
+}
+
+/* ===== SKILLS ===== */
+.skills-grid{
+  display:grid;grid-template-columns:140px 1fr;gap:8px 24px;
+  font-size:0.9rem;
+}
+.skills-grid dt{
+  font-family:var(--sans);font-weight:600;font-size:0.82rem;
+  color:var(--text-light);text-align:right;padding-top:7px;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.skills-grid dd{
+  color:var(--text-secondary);padding:6px 0;
+  border-bottom:1px solid var(--rule-light);
+  line-height:1.7;
+}
+.skills-grid dd:last-child{border-bottom:none}
+
+/* ===== EXPERIENCE ===== */
+.exp-item{padding:12px 0;font-size:0.92rem}
+.exp-item+.exp-item{border-top:1px solid var(--rule-light)}
+.exp-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:4px}
+.exp-role{font-weight:600;color:var(--text)}
+.exp-org{color:var(--text-light);font-size:0.88rem}
+.exp-desc{color:var(--text-secondary);font-size:0.88rem;line-height:1.7}
+.exp-awards{margin-top:8px;font-size:0.85rem;color:var(--text-secondary);line-height:1.8}
+.exp-awards ul{list-style:none;margin:0;padding:0}
+.exp-awards li{position:relative;padding-left:16px;color:var(--text-light)}
+.exp-awards li::before{content:'\2013';position:absolute;left:0;color:var(--text-faint)}
+.exp-awards li strong{font-weight:600;color:var(--text)}
+.exp-awards li.etc{color:var(--text-faint);font-size:0.82rem;font-style:italic}
+.exp-awards li.etc::before{content:''}
+
+/* ===== FOOTER ===== */
+footer{
+  margin-top:48px;padding-top:20px;border-top:1px solid var(--rule);
+  font-family:var(--sans);font-size:0.78rem;color:var(--text-faint);
+  display:flex;justify-content:space-between;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:720px){
+  .page{padding:32px 20px 60px}
+  .main-layout{grid-template-columns:1fr;gap:24px}
+  .sidebar-col{position:static}
+  .sidebar-col .sidebar-info{order:-1}
+  .sidebar-info .photo-placeholder{max-width:180px}
+  .edu-item{grid-template-columns:1fr;gap:2px}
+  .edu-date{text-align:left}
+  .proj-head{flex-direction:column;gap:2px}
+  .skills-grid{grid-template-columns:1fr;gap:4px 0}
+  .skills-grid dt{text-align:left;padding-top:10px}
+  .exp-head{flex-direction:column;gap:2px}
+  footer{flex-direction:column;gap:4px}
+  .page-nav{gap:6px 18px}
+}
+
+/* print-friendly */
+@media print{
+  body{font-size:11pt}
+  .page{max-width:100%;padding:0}
+  .page-nav{display:none}
+  a{color:var(--text);border:none}
+  .section h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- HEADER -->
+<header>
+  <h1>Yoon-Ji Choi</h1>
+  <div class="subtitle">M.S. Student · Interactive Robotics Lab · Dongguk University</div>
+  <div class="contact-line">
+    <span>✉ <a href="mailto:choiyj@dgu.ac.kr">choiyj@dgu.ac.kr</a></span>
+    <span><a href="https://github.com/Choiyoonji">github.com/Choiyoonji</a></span>
+    <span>Seoul, Korea</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="page-nav" id="top">
+  <a href="#about">About</a>
+  <a href="#interests">Research Interests</a>
+  <a href="#publications">Publications</a>
+  <a href="#projects">Projects</a>
+  <a href="#experience">Experience</a>
+</nav>
+
+<!-- MAIN TWO-COLUMN LAYOUT -->
+<div class="main-layout" id="about">
+  <div class="main-content">
+
+    <!-- ABOUT -->
+    <div class="section">
+      <h2>About</h2>
+      <div class="intro-text">
+        <p>
+          I am an M.S. student in the <strong>Interactive Robotics Lab</strong> at Dongguk University, advised by <strong>Prof. Soo-Chul Lim</strong>.
+          My research focuses on <strong>bimanual robot learning and control</strong>, with a particular emphasis on <strong>Vision-Language-Action (VLA) models</strong>
+          and their application to real-world manipulation tasks.
+        </p>
+      </div>
+    </div>
+
+<!-- RESEARCH INTERESTS -->
+<div class="section" id="interests">
+  <h2>Research Interests</h2>
+  <div class="interests">
+    <ul>
+      <li>Bimanual Robot Learning &amp; Control</li>
+      <li>Vision-Language-Action Models</li>
+      <li>Robot Teleoperation</li>
+      <li>Mixture-of-Experts Architecture</li>
+      <li>Multimodal Perception for Robotics</li>
+    </ul>
+  </div>
+</div>
+
+<!-- EDUCATION -->
+<div class="section" id="education">
+  <h2>Education</h2>
+  <div class="edu-item">
+    <div>
+      <div class="edu-degree">M.S. in Mechanical Engineering</div>
+      <div class="edu-detail">Dongguk University, Seoul — Interactive Robotics Lab (Advisor: Prof. S.-C. Lim)</div>
+    </div>
+    <div class="edu-date">Sep 2025 – Present</div>
+  </div>
+  <div class="edu-item">
+    <div>
+      <div class="edu-degree">B.S. in Mechanical, Robotics &amp; Energy Engineering</div>
+      <div class="edu-detail">Dongguk University, Seoul</div>
+    </div>
+    <div class="edu-date">Mar 2022 – Aug 2025</div>
+  </div>
+</div>
+
+<!-- PUBLICATIONS -->
+<div class="section" id="publications">
+  <h2>Publications</h2>
+
+  <div class="pub-item">
+    <div class="pub-ref">[J1]</div>
+    <div class="pub-title">ThermoAct: Thermal-Aware Vision-Language-Action Models for Robotic Perception and Decision-Making</div>
+    <div class="pub-authors">Y.-C. Son, D.-K. Ko, <span class="me">Y.-J. Choi</span>, and S.-C. Lim</div>
+    <div class="pub-venue">IEEE Robotics and Automation Letters (RA-L) <span class="pub-status accepted">Accepted</span></div>
+  </div>
+
+  <div class="pub-item">
+    <div class="pub-ref">[P1]</div>
+    <div class="pub-title">Selective Perception for Robot: Task-Aware Attention in Multimodal VLA</div>
+    <div class="pub-authors">Y.-C. Son, J.-W. Lee, <span class="me">Y.-J. Choi</span>, D.-K. Ko, and S.-C. Lim</div>
+    <div class="pub-venue">arXiv preprint arXiv:2602.15543, 2026 <span class="pub-status preprint">Preprint</span></div>
+  </div>
+
+</div>
+
+<!-- PROJECTS -->
+<div class="section" id="projects">
+  <h2>Research Projects</h2>
+
+  <div class="proj-item">
+    <div class="proj-head">
+      <span class="proj-name">UR5e Bimanual Teleoperation System</span>
+      <span class="proj-date">2026</span>
+    </div>
+    <div class="proj-tech">UR5e · Meta Quest VR · MuJoCo</div>
+    <div class="proj-desc">
+      <ul>
+        <li>Real-time teleoperation via Meta Quest VR controllers</li>
+        <li>Inter-robot collision avoidance using MuJoCo geometric distance computation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="proj-item">
+    <div class="proj-head">
+      <span class="proj-name">Fine-tuning VLA Models (pi0, GR00T N1.5)</span>
+      <span class="proj-date">2024 – 2025</span>
+    </div>
+    <div class="proj-tech">PyTorch · pi0 · GR00T N1.5</div>
+    <div class="proj-desc">
+      <ul>
+        <li>Sensor-grounded robot task fine-tuning for manipulation scenarios</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="proj-item">
+    <div class="proj-head">
+      <span class="proj-name">Mobile Manipulator Remote Control GUI</span>
+      <span class="proj-date">2024</span>
+    </div>
+    <div class="proj-tech">Scout Mini · ROS · Python</div>
+    <div class="proj-desc">
+      <ul>
+        <li>Integrated system GUI for mobile manipulator control (Scout Mini + robotic arm)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="proj-item">
+    <div class="proj-head">
+      <span class="proj-name">Autonomous Hamburger Assembly Robot</span>
+      <span class="proj-date">2024</span>
+    </div>
+    <div class="proj-tech">OpenCV · Collaborative Robot</div>
+    <div class="proj-desc">
+      <ul>
+        <li>End-to-end vision-based robotic assembly using collaborative arm</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- EXPERIENCE & AWARDS -->
+<div class="section" id="experience">
+  <h2>Experience</h2>
+  <div class="exp-item">
+    <div class="exp-head">
+      <span class="exp-role">M.S. Student</span>
+      <span class="edu-date">Sep 2025 – Present</span>
+    </div>
+    <div class="exp-org">Interactive Robotics Lab, Dongguk University</div>
+    <div class="exp-desc">Bimanual robot learning and control; developing Mixture-of-Experts VLA architecture. Building teleoperation systems for dual UR5e arms with VR-based control interfaces.</div>
+  </div>
+  <div class="exp-item">
+    <div class="exp-head">
+      <span class="exp-role">Team Leader — SOOMAC (Robot Arm Team)</span>
+      <span class="edu-date">2023 – 2024</span>
+    </div>
+    <div class="exp-org">Dongguk University</div>
+    <div class="exp-desc">Led computer vision development for robotic arm manipulation tasks; coordinated team of engineers for competitive robot arm challenges.</div>
+    <div class="exp-awards">
+      <ul>
+        <li><strong>Minister of Trade, Industry and Energy Award</strong>, Creative Engineering Design Competition, 2024</li>
+        <li><strong>Best Award</strong>, IoT Home Appliance Consortium Engineering Design, 2024</li>
+        <li class="etc">and 4 more</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exp-item">
+    <div class="exp-head">
+      <span class="exp-role">Member — MACARON (Autonomous Driving Team)</span>
+      <span class="edu-date">2022 – 2024</span>
+    </div>
+    <div class="exp-org">Dongguk University</div>
+    <div class="exp-desc">Path planning and tracking algorithms for autonomous vehicle systems; participated in multiple national autonomous driving competitions.</div>
+    <div class="exp-awards">
+      <ul>
+        <li><strong>Grand Prize</strong>, Future Mobility Urban Challenge, 2022</li>
+        <li><strong>Innovation Award</strong>, SNU Autonomous Driving SW Challenge, 2023</li>
+        <li class="etc">and 2 more</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</div>
+
+  <!-- STICKY SIDEBAR -->
+  <aside class="sidebar-col">
+    <div class="sidebar-info">
+      <div class="photo-placeholder">Photo</div>
+      <dl>
+        <dt>Affiliation</dt>
+        <dd>Dongguk University</dd>
+        <dt>Lab</dt>
+        <dd>Interactive Robotics Lab</dd>
+        <dt>Advisor</dt>
+        <dd>Prof. Soo-Chul Lim</dd>
+        <dt>Degree</dt>
+        <dd>M.S. student (2025–)</dd>
+        <dt>Email</dt>
+        <dd><a href="mailto:choiyj@dgu.ac.kr">choiyj@dgu.ac.kr</a></dd>
+        <dt>GitHub</dt>
+        <dd><a href="https://github.com/Choiyoonji">Choiyoonji</a></dd>
+      </dl>
+    </div>
+  </aside>
+
+</div><!-- .main-layout -->
+
+<!-- FOOTER -->
+<footer>
+  <span>&copy; 2026 Yoon-Ji Choi</span>
+  <span>Last updated: Mar 2026</span>
+</footer>
+
+</div><!-- .page -->
+
+</body>
+</html>
