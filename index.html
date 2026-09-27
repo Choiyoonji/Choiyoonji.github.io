@@ -99,10 +99,9 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
   border:1px solid var(--rule-light);padding:24px;
   background:#fafaf8;
 }
-.sidebar-info .photo-placeholder{
-  width:100%;aspect-ratio:1;background:#eee;
-  margin-bottom:16px;display:flex;align-items:center;justify-content:center;
-  color:var(--text-faint);font-size:0.8rem;border:1px solid var(--rule-light);
+.sidebar-info .profile-photo{
+  display:block;width:100%;height:auto;
+  margin-bottom:16px;border:1px solid var(--rule-light);
 }
 .sidebar-info dl{margin:0}
 .sidebar-info dt{
@@ -223,7 +222,7 @@ footer{
   .main-layout{grid-template-columns:1fr;gap:24px}
   .sidebar-col{position:static}
   .sidebar-col .sidebar-info{order:-1}
-  .sidebar-info .photo-placeholder{max-width:180px}
+  .sidebar-info .profile-photo{max-width:180px}
   .edu-item{grid-template-columns:1fr;gap:2px}
   .edu-date{text-align:left}
   .proj-head{flex-direction:column;gap:2px}
@@ -322,6 +321,13 @@ footer{
   <h2>Publications</h2>
 
   <div class="pub-item">
+    <div class="pub-ref">[P1]</div>
+    <div class="pub-title">See Selectively, Act Adaptively: Dual-Level Structural Decomposition for Bimanual Robot Manipulation</div>
+    <div class="pub-authors"><span class="me">Yoon-Ji Choi</span>, Young-Chul Son, and Soo-Chul Lim</div>
+    <div class="pub-venue"><a href="https://arxiv.org/abs/2606.13279">arXiv:2606.13279</a>, 2026 <span class="pub-status review">Under Review</span></div>
+  </div>
+
+  <div class="pub-item">
     <div class="pub-ref">[J1]</div>
     <div class="pub-title">ThermoAct: Thermal-Aware Vision-Language-Action Models for Robotic Perception and Decision-Making</div>
     <div class="pub-authors">Y.-C. Son, D.-K. Ko, <span class="me">Y.-J. Choi</span>, and S.-C. Lim</div>
@@ -329,7 +335,7 @@ footer{
   </div>
 
   <div class="pub-item">
-    <div class="pub-ref">[P1]</div>
+    <div class="pub-ref">[P2]</div>
     <div class="pub-title">Selective Perception for Robot: Task-Aware Attention in Multimodal VLA</div>
     <div class="pub-authors">Y.-C. Son, J.-W. Lee, <span class="me">Y.-J. Choi</span>, D.-K. Ko, and S.-C. Lim</div>
     <div class="pub-venue">arXiv preprint arXiv:2602.15543, 2026 <span class="pub-status preprint">Preprint</span></div>
@@ -443,7 +449,7 @@ footer{
   <!-- STICKY SIDEBAR -->
   <aside class="sidebar-col">
     <div class="sidebar-info">
-      <div class="photo-placeholder">Photo</div>
+      <img class="profile-photo" src="assets/profile.jpg" alt="Portrait of Yoon-Ji Choi">
       <dl>
         <dt>Affiliation</dt>
         <dd>Dongguk University</dd>
@@ -466,7 +472,7 @@ footer{
 <!-- FOOTER -->
 <footer>
   <span>&copy; 2026 Yoon-Ji Choi</span>
-  <span>Last updated: Mar 2026</span>
+  <span>Last updated: Sep 2026</span>
 </footer>
 
 </div><!-- .page -->
