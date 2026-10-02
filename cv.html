@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoon-Ji Choi — Curriculum Vitae</title>
+<meta name="description" content="Curriculum Vitae of Yoon-Ji Choi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#f4f4f2;--text:#222;--text-light:#666;--link:#1a4a8a;
+  --rule:#d8d8d4;--serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Source Sans 3','Helvetica Neue',Helvetica,sans-serif;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif)}
+a{color:var(--link);text-decoration:none;border-bottom:1px solid transparent}
+a:hover{border-bottom-color:var(--link)}
+.cv-shell{max-width:960px;margin:0 auto;padding:32px 28px 64px}
+.cv-header{
+  display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+  margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--rule);
+}
+.cv-header h1{margin:0;font-size:1.45rem;line-height:1.3}
+.cv-actions{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--sans);font-size:0.88rem}
+.cv-pages{display:grid;gap:24px}
+.cv-page{
+  display:block;width:100%;height:auto;background:#fff;border:1px solid var(--rule);
+  box-shadow:0 4px 18px rgba(0,0,0,0.08);
+}
+@media(max-width:600px){
+  .cv-shell{padding:20px 12px 40px}
+  .cv-header{align-items:flex-start;flex-direction:column;gap:10px}
+  .cv-pages{gap:14px}
+}
+@media print{
+  body{background:#fff}
+  .cv-shell{max-width:none;padding:0}
+  .cv-header{display:none}
+  .cv-pages{gap:0}
+  .cv-page{border:0;box-shadow:none;break-after:page}
+}
+</style>
+</head>
+<body>
+<main class="cv-shell">
+  <header class="cv-header">
+    <h1>Curriculum Vitae · Yoon-Ji Choi</h1>
+    <nav class="cv-actions" aria-label="CV actions">
+      <a href="/">Back to home</a>
+      <a href="/assets/YoonJi_Choi_CV.pdf?v=20261002" download="YoonJi_Choi_CV.pdf">Download PDF</a>
+    </nav>
+  </header>
+  <div class="cv-pages">
+    <img class="cv-page" src="/assets/cv/page-1.png" alt="Yoon-Ji Choi CV page 1 of 3">
+    <img class="cv-page" src="/assets/cv/page-2.png" alt="Yoon-Ji Choi CV page 2 of 3" loading="lazy">
+    <img class="cv-page" src="/assets/cv/page-3.png" alt="Yoon-Ji Choi CV page 3 of 3" loading="lazy">
+  </div>
+</main>
+</body>
+</html>
