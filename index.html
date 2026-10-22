@@ -136,10 +136,24 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 
 /* ===== PUBLICATIONS ===== */
 .pub-item{
-  padding:14px 0;font-size:0.92rem;line-height:1.7;
+  display:grid;grid-template-columns:148px minmax(0,1fr);gap:18px;align-items:start;
+  padding:18px 0;font-size:0.92rem;line-height:1.7;
   counter-increment:pub;
 }
 .pub-item+.pub-item{border-top:1px solid var(--rule-light)}
+.pub-media{min-width:0;padding-top:3px}
+.pub-media video{
+  display:block;width:100%;height:auto;
+  background:#f5f5f2;border:1px solid var(--rule-light);
+}
+.pub-video-link{
+  display:inline-block;margin-top:6px;font-family:var(--sans);
+  font-size:0.76rem;line-height:1.4;
+}
+.pub-details{min-width:0}
+.pub-description{
+  margin-top:9px;font-size:0.85rem;line-height:1.65;color:var(--text-secondary);
+}
 .pub-item .pub-ref{
   font-family:var(--mono);font-size:0.78rem;color:var(--text-faint);
   margin-bottom:4px;
@@ -233,6 +247,15 @@ footer{
   .page-nav{gap:6px 18px}
 }
 
+@media(max-width:560px){
+  .pub-item{grid-template-columns:1fr;gap:12px}
+  .pub-media{width:100%;max-width:280px;padding-top:0}
+}
+@media print{
+  .pub-item{grid-template-columns:1fr;break-inside:avoid}
+  .pub-media{display:none}
+}
+
 /* print-friendly */
 @media print{
   body{font-size:11pt}
@@ -320,26 +343,57 @@ footer{
 <!-- PUBLICATIONS -->
 <div class="section" id="publications">
   <h2>Publications</h2>
+  <!-- Videos and summaries adapted from https://youngchae912.github.io/ -->
 
   <div class="pub-item">
-    <div class="pub-ref">[P1]</div>
-    <div class="pub-title">See Selectively, Act Adaptively: Dual-Level Structural Decomposition for Bimanual Robot Manipulation</div>
-    <div class="pub-authors"><span class="me">Y.-J. Choi</span>, Y.-C. Son, and S.-C. Lim</div>
-    <div class="pub-venue"><a href="https://arxiv.org/abs/2606.13279">arXiv:2606.13279</a>, 2026 · <a href="https://choiyoonji.github.io/See-Selectively-Act-Adaptively/">Project Page</a> <span class="pub-status review">Under Review</span></div>
+    <div class="pub-media">
+      <video autoplay loop muted playsinline controls preload="metadata" aria-label="See Selectively, Act Adaptively: Dual-Level Structural Decomposition for Bimanual Robot Manipulation — research video">
+        <source src="assets/publications/see-selectively-act-adaptively.mp4" type="video/mp4">
+        Your browser does not support embedded video. <a href="assets/publications/see-selectively-act-adaptively.mp4">Watch the video</a>.
+      </video>
+      <a class="pub-video-link" href="assets/publications/see-selectively-act-adaptively.mp4" target="_blank" rel="noopener">Watch video ↗</a>
+    </div>
+    <div class="pub-details">
+      <div class="pub-ref">[P1]</div>
+      <div class="pub-title">See Selectively, Act Adaptively: Dual-Level Structural Decomposition for Bimanual Robot Manipulation</div>
+      <div class="pub-authors"><span class="me">Y.-J. Choi</span>, Y.-C. Son, and S.-C. Lim</div>
+      <div class="pub-venue"><a href="https://arxiv.org/abs/2606.13279">arXiv:2606.13279</a>, 2026 · <a href="https://choiyoonji.github.io/See-Selectively-Act-Adaptively/">Project Page</a> <span class="pub-status review">Under Review</span></div>
+      <p class="pub-description">See Selectively, Act Adaptively decomposes bimanual robot manipulation into view-selective perception and interaction-aware action routing to improve robust, long-horizon task performance.</p>
+    </div>
   </div>
 
   <div class="pub-item">
-    <div class="pub-ref">[J1]</div>
-    <div class="pub-title">ThermoAct: Thermal-Aware Vision-Language-Action Models for Robotic Perception and Decision-Making</div>
-    <div class="pub-authors">Y.-C. Son, D.-K. Ko, <span class="me">Y.-J. Choi</span>, and S.-C. Lim</div>
-    <div class="pub-venue">IEEE Robotics and Automation Letters (RA-L) · <a href="https://imyoungchae.github.io/ThermoAct/">Project Page</a> <span class="pub-status accepted">Accepted</span></div>
+    <div class="pub-media">
+      <video autoplay loop muted playsinline controls preload="metadata" aria-label="ThermoAct: Thermal-Aware Vision-Language-Action Models for Robotic Perception and Decision-Making — research video">
+        <source src="assets/publications/thermoact.mp4" type="video/mp4">
+        Your browser does not support embedded video. <a href="assets/publications/thermoact.mp4">Watch the video</a>.
+      </video>
+      <a class="pub-video-link" href="assets/publications/thermoact.mp4" target="_blank" rel="noopener">Watch video ↗</a>
+    </div>
+    <div class="pub-details">
+      <div class="pub-ref">[J1]</div>
+      <div class="pub-title">ThermoAct: Thermal-Aware Vision-Language-Action Models for Robotic Perception and Decision-Making</div>
+      <div class="pub-authors">Y.-C. Son, D.-K. Ko, <span class="me">Y.-J. Choi</span>, and S.-C. Lim</div>
+      <div class="pub-venue">IEEE Robotics and Automation Letters (RA-L) · <a href="https://youngchae912.github.io/ThermoAct/">Project Page</a> <span class="pub-status accepted">Accepted</span></div>
+      <p class="pub-description">A hierarchical VLM&ndash;VLA framework that leverages thermal information to adapt task plans to environmental conditions, enabling safer, temperature-aware robotic manipulation.</p>
+    </div>
   </div>
 
   <div class="pub-item">
-    <div class="pub-ref">[P2]</div>
-    <div class="pub-title">Selective Perception for Robot: Task-Aware Attention in Multimodal VLA</div>
-    <div class="pub-authors">Y.-C. Son, J.-W. Lee, <span class="me">Y.-J. Choi</span>, D.-K. Ko, and S.-C. Lim</div>
-    <div class="pub-venue"><a href="https://arxiv.org/abs/2602.15543">arXiv preprint arXiv:2602.15543</a>, 2026 · <a href="https://imyoungchae.github.io/SelectiveAttention/">Project Page</a> <span class="pub-status review">Under Review</span></div>
+    <div class="pub-media">
+      <video autoplay loop muted playsinline controls preload="metadata" aria-label="Task-Aware Modality Selection for Multimodal VLA in Robotic Manipulation — research video">
+        <source src="assets/publications/selective-attention.mp4" type="video/mp4">
+        Your browser does not support embedded video. <a href="assets/publications/selective-attention.mp4">Watch the video</a>.
+      </video>
+      <a class="pub-video-link" href="assets/publications/selective-attention.mp4" target="_blank" rel="noopener">Watch video ↗</a>
+    </div>
+    <div class="pub-details">
+      <div class="pub-ref">[P2]</div>
+      <div class="pub-title">Task-Aware Modality Selection for Multimodal VLA in Robotic Manipulation</div>
+      <div class="pub-authors">Y.-C. Son, J.-W. Lee, <span class="me">Y.-J. Choi</span>, D.-K. Ko, and S.-C. Lim</div>
+      <div class="pub-venue"><a href="https://arxiv.org/abs/2602.15543">arXiv preprint arXiv:2602.15543</a>, 2026 · <a href="https://youngchae912.github.io/SelectiveAttention/">Project Page</a> <span class="pub-status review">Under Review</span></div>
+      <p class="pub-description">A lightweight router for a pretrained VLA that dynamically emphasizes task-relevant sensory streams while attenuating irrelevant ones.</p>
+    </div>
   </div>
 
 </div>
@@ -487,7 +541,7 @@ footer{
 <!-- FOOTER -->
 <footer>
   <span>&copy; 2026 Yoon-Ji Choi</span>
-  <span>Last updated: Sep 2026</span>
+  <span>Last updated: Oct 2026</span>
 </footer>
 
 </div><!-- .page -->
