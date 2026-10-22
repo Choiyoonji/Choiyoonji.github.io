@@ -23,6 +23,10 @@
   --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
   --sans:'Source Sans 3','Helvetica Neue',Helvetica,sans-serif;
   --mono:'Source Code Pro','Courier New',monospace;
+  --page-width:1440px;
+  --page-gutter:32px;
+  --profile-width:260px;
+  --profile-gap:56px;
 }
 html{scroll-behavior:smooth}
 body{
@@ -36,8 +40,11 @@ a:hover{border-bottom-color:var(--link)}
 
 /* ===== LAYOUT ===== */
 .page{
-  max-width:920px;margin:0 auto;
-  padding:60px 40px 80px;
+  max-width:var(--page-width);margin:0 auto;
+  padding:60px var(--page-gutter) 80px;
+}
+.page>header,.page-nav,.main-layout,.page>footer{
+  width:calc(100% - var(--profile-width) - var(--profile-gap));
 }
 
 /* ===== HEADER ===== */
@@ -84,12 +91,16 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 
 /* ===== MAIN LAYOUT ===== */
 .main-layout{
-  display:grid;grid-template-columns:1fr 260px;gap:48px;
-  align-items:start;
+  display:block;
 }
-.main-content{}
+.main-content{min-width:0}
 .main-content .section{margin-bottom:44px}
-.sidebar-col{position:sticky;top:80px;align-self:start}
+.sidebar-col{
+  position:fixed;top:60px;
+  right:max(var(--page-gutter),calc((100vw - var(--page-width))/2 + var(--page-gutter)));
+  width:var(--profile-width);max-height:calc(100dvh - 76px);
+  overflow-y:auto;overscroll-behavior:contain;
+}
 .intro-text{font-size:0.98rem;color:var(--text-secondary);line-height:1.85}
 .intro-text p{margin-bottom:14px}
 .intro-text strong{color:var(--text);font-weight:600}
@@ -100,8 +111,8 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
   background:#fafaf8;
 }
 .sidebar-info .profile-photo{
-  display:block;width:100%;height:auto;
-  margin-bottom:16px;border:1px solid var(--rule-light);
+  display:block;width:100%;max-width:180px;height:auto;
+  margin:0 auto 16px;border:1px solid var(--rule-light);
 }
 .sidebar-info dl{margin:0}
 .sidebar-info dt{
@@ -227,12 +238,15 @@ footer{
 }
 
 /* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .page>header,.page-nav,.main-layout,.page>footer{width:100%}
+  .sidebar-col{
+    position:static;width:100%;max-height:none;overflow:visible;margin-top:40px;
+  }
+  .sidebar-info .profile-photo{max-width:180px}
+}
 @media(max-width:720px){
   .page{padding:32px 20px 60px}
-  .main-layout{grid-template-columns:1fr;gap:24px}
-  .sidebar-col{position:static}
-  .sidebar-col .sidebar-info{order:-1}
-  .sidebar-info .profile-photo{max-width:180px}
   .edu-item{grid-template-columns:1fr;gap:2px}
   .edu-date{text-align:left}
   .proj-head{flex-direction:column;gap:2px}
@@ -256,6 +270,9 @@ footer{
 @media print{
   body{font-size:11pt}
   .page{max-width:100%;padding:0}
+  .page>header,.page-nav,.main-layout,.page>footer{width:100%}
+  .sidebar-col{position:static;width:100%;max-height:none;overflow:visible;margin-top:24px}
+  .sidebar-info .profile-photo{max-width:180px}
   .page-nav{display:none}
   a{color:var(--text);border:none}
   .section h2{break-after:avoid}
@@ -287,7 +304,7 @@ footer{
   <a href="#experience">Experience</a>
 </nav>
 
-<!-- MAIN TWO-COLUMN LAYOUT -->
+<!-- MAIN CONTENT -->
 <div class="main-layout" id="about">
   <div class="main-content">
 
@@ -508,7 +525,7 @@ footer{
   </div>
 </div>
 
-  <!-- STICKY SIDEBAR -->
+  <!-- FIXED PROFILE CARD -->
   <aside class="sidebar-col">
     <div class="sidebar-info">
       <img class="profile-photo" src="assets/profile.jpg" alt="Portrait of Yoon-Ji Choi">
