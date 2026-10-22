@@ -40,6 +40,7 @@ a:hover{border-bottom-color:var(--link)}
 
 /* ===== LAYOUT ===== */
 .page{
+  position:relative;
   max-width:var(--page-width);margin:0 auto;
   padding:60px var(--page-gutter) 80px;
 }
@@ -96,10 +97,8 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 .main-content{min-width:0}
 .main-content .section{margin-bottom:44px}
 .sidebar-col{
-  position:fixed;top:60px;
-  right:max(var(--page-gutter),calc((100vw - var(--page-width))/2 + var(--page-gutter)));
-  width:var(--profile-width);max-height:calc(100dvh - 76px);
-  overflow-y:auto;overscroll-behavior:contain;
+  position:absolute;top:60px;right:var(--page-gutter);
+  width:var(--profile-width);
 }
 .intro-text{font-size:0.98rem;color:var(--text-secondary);line-height:1.85}
 .intro-text p{margin-bottom:14px}
@@ -526,7 +525,7 @@ footer{
   </div>
 </div>
 
-  <!-- FIXED PROFILE CARD -->
+  <!-- PROFILE CARD -->
   <aside class="sidebar-col">
     <div class="sidebar-info">
       <img class="profile-photo" src="assets/profile.jpg" alt="Portrait of Yoon-Ji Choi">
