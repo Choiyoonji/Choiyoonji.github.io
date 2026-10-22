@@ -24,6 +24,7 @@
   --sans:'Source Sans 3','Helvetica Neue',Helvetica,sans-serif;
   --mono:'Source Code Pro','Courier New',monospace;
   --page-width:1100px;
+  --content-width:720px;
   --page-gutter:32px;
   --profile-width:260px;
   --profile-gap:56px;
@@ -40,12 +41,15 @@ a:hover{border-bottom-color:var(--link)}
 
 /* ===== LAYOUT ===== */
 .page{
-  position:relative;
   max-width:var(--page-width);margin:0 auto;
   padding:60px var(--page-gutter) 80px;
 }
-.page>header,.page-nav,.main-layout,.page>footer{
-  width:calc(100% - var(--profile-width) - var(--profile-gap));
+.intro-layout{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--profile-width);
+  gap:var(--profile-gap);align-items:start;margin-bottom:44px;
+}
+.main-content,.page>footer{
+  width:100%;max-width:var(--content-width);margin-left:auto;margin-right:auto;
 }
 
 /* ===== HEADER ===== */
@@ -91,15 +95,10 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 }
 
 /* ===== MAIN LAYOUT ===== */
-.main-layout{
-  display:block;
-}
-.main-content{min-width:0}
+.intro-content,.main-content{min-width:0}
+.intro-content>.section:last-child{margin-bottom:0}
 .main-content .section{margin-bottom:44px}
-.sidebar-col{
-  position:absolute;top:60px;right:var(--page-gutter);
-  width:var(--profile-width);
-}
+.sidebar-col{width:100%}
 .intro-text{font-size:0.98rem;color:var(--text-secondary);line-height:1.85}
 .intro-text p{margin-bottom:14px}
 .intro-text strong{color:var(--text);font-weight:600}
@@ -238,11 +237,17 @@ footer{
 
 /* ===== RESPONSIVE ===== */
 @media(max-width:1024px){
-  .page>header,.page-nav,.main-layout,.page>footer{width:100%}
-  .sidebar-col{
-    position:static;width:100%;max-height:none;overflow:visible;margin-top:40px;
+  .intro-layout{
+    grid-template-columns:1fr;gap:28px;max-width:var(--content-width);
+    margin-left:auto;margin-right:auto;
   }
-  .sidebar-info .profile-photo{max-width:180px}
+  .sidebar-info{
+    display:grid;grid-template-columns:140px minmax(0,1fr);gap:24px;align-items:start;
+  }
+  .sidebar-info .profile-photo{max-width:140px;margin:0}
+  .sidebar-info dl{min-width:0}
+  .sidebar-info dt:first-child{margin-top:0}
+  .sidebar-info dd{overflow-wrap:anywhere}
 }
 @media(max-width:720px){
   .page{padding:32px 20px 60px}
@@ -257,6 +262,8 @@ footer{
 }
 
 @media(max-width:560px){
+  .sidebar-info{grid-template-columns:88px minmax(0,1fr);gap:16px;padding:18px}
+  .sidebar-info .profile-photo{max-width:88px}
   .pub-item{grid-template-columns:1fr;gap:12px}
   .pub-media{width:100%;max-width:280px;padding-top:0}
 }
@@ -269,8 +276,9 @@ footer{
 @media print{
   body{font-size:11pt}
   .page{max-width:100%;padding:0}
-  .page>header,.page-nav,.main-layout,.page>footer{width:100%}
-  .sidebar-col{position:static;width:100%;max-height:none;overflow:visible;margin-top:24px}
+  .intro-layout{display:block}
+  .main-content,.page>footer{max-width:100%}
+  .sidebar-col{margin-top:24px}
   .sidebar-info .profile-photo{max-width:180px}
   .page-nav{display:none}
   a{color:var(--text);border:none}
@@ -282,6 +290,9 @@ footer{
 
 <div class="page">
 
+<!-- INTRODUCTION -->
+<div class="intro-layout">
+  <div class="intro-content">
 <!-- HEADER -->
 <header>
   <h1>Yoon-Ji Choi</h1>
@@ -305,12 +316,8 @@ footer{
   <a href="#teaching">Teaching</a>
 </nav>
 
-<!-- MAIN CONTENT -->
-<div class="main-layout" id="about">
-  <div class="main-content">
-
     <!-- ABOUT -->
-    <div class="section">
+    <div class="section" id="about">
       <h2>About</h2>
       <div class="intro-text">
         <p>
@@ -353,7 +360,32 @@ footer{
     <div class="edu-date">Mar 2022 – Aug 2025</div>
   </div>
 </div>
+  </div>
 
+<!-- PROFILE CARD -->
+  <aside class="sidebar-col">
+    <div class="sidebar-info">
+      <img class="profile-photo" src="assets/profile.jpg" alt="Portrait of Yoon-Ji Choi">
+      <dl>
+        <dt>Affiliation</dt>
+        <dd>Dongguk University</dd>
+        <dt>Lab</dt>
+        <dd>Interactive Robotics Lab</dd>
+        <dt>Advisor</dt>
+        <dd>Prof. Soo-Chul Lim</dd>
+        <dt>Degree</dt>
+        <dd>M.S. student (2025–)</dd>
+        <dt>Email</dt>
+        <dd><a href="mailto:choiyj@dgu.ac.kr">choiyj@dgu.ac.kr</a></dd>
+        <dt>Profiles</dt>
+        <dd><a href="https://github.com/Choiyoonji">GitHub</a> · <a href="https://www.linkedin.com/in/yoonji-choi-248a8328b/" target="_blank" rel="noopener noreferrer">LinkedIn</a></dd>
+      </dl>
+    </div>
+  </aside>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
 <!-- PUBLICATIONS -->
 <div class="section" id="publications">
   <h2>Publications</h2>
@@ -560,30 +592,7 @@ footer{
     </div>
   </div>
   </div>
-</div>
-
-  <!-- PROFILE CARD -->
-  <aside class="sidebar-col">
-    <div class="sidebar-info">
-      <img class="profile-photo" src="assets/profile.jpg" alt="Portrait of Yoon-Ji Choi">
-      <dl>
-        <dt>Affiliation</dt>
-        <dd>Dongguk University</dd>
-        <dt>Lab</dt>
-        <dd>Interactive Robotics Lab</dd>
-        <dt>Advisor</dt>
-        <dd>Prof. Soo-Chul Lim</dd>
-        <dt>Degree</dt>
-        <dd>M.S. student (2025–)</dd>
-        <dt>Email</dt>
-        <dd><a href="mailto:choiyj@dgu.ac.kr">choiyj@dgu.ac.kr</a></dd>
-        <dt>Profiles</dt>
-        <dd><a href="https://github.com/Choiyoonji">GitHub</a> · <a href="https://www.linkedin.com/in/yoonji-choi-248a8328b/" target="_blank" rel="noopener noreferrer">LinkedIn</a></dd>
-      </dl>
-    </div>
-  </aside>
-
-</div><!-- .main-layout -->
+</main>
 
 <!-- FOOTER -->
 <footer>
