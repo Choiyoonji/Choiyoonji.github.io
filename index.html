@@ -51,6 +51,14 @@ a:hover{border-bottom-color:var(--link)}
 .main-content,.page>footer{
   width:100%;max-width:var(--content-width);margin-left:auto;margin-right:auto;
 }
+/* Two-column width: keep the main sections and footer in the introduction's column,
+   left of the profile card, so every section starts at the same edge. */
+@media screen and (min-width:1025px){
+  .main-content,.page>footer{
+    margin-left:0;
+    max-width:min(var(--content-width),calc(100% - var(--profile-width) - var(--profile-gap)));
+  }
+}
 
 /* ===== HEADER ===== */
 header{
