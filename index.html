@@ -203,6 +203,23 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 .proj-desc li::before{
   content:'\2013';position:absolute;left:0;color:var(--text-faint);
 }
+.proj-authors{color:var(--text-secondary);font-size:0.88rem;margin-bottom:4px}
+.proj-authors .me{font-weight:600;color:var(--text);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+
+/* ===== FUNDED PROJECTS ===== */
+.fund-item{
+  display:grid;grid-template-columns:148px minmax(0,1fr);gap:18px;align-items:start;
+  padding:18px 0;font-size:0.92rem;
+}
+.fund-item+.fund-item{border-top:1px solid var(--rule-light)}
+.fund-media{min-width:0;padding-top:4px}
+.fund-media img{
+  display:block;width:100%;height:auto;
+  background:#f5f5f2;border:1px solid var(--rule-light);
+}
+.fund-details{min-width:0}
+.fund-sponsor{color:var(--text-light);font-size:0.88rem;margin-bottom:2px}
+.fund-goal{color:var(--text-secondary);font-size:0.9rem;line-height:1.75;margin-bottom:4px}
 
 /* ===== SKILLS ===== */
 .skills-grid{
@@ -274,10 +291,12 @@ footer{
   .sidebar-info .profile-photo{max-width:88px}
   .pub-item{grid-template-columns:1fr;gap:12px}
   .pub-media{width:100%;max-width:280px;padding-top:0}
+  .fund-item{grid-template-columns:1fr;gap:12px}
+  .fund-media{width:100%;max-width:280px;padding-top:0}
 }
 @media print{
-  .pub-item{grid-template-columns:1fr;break-inside:avoid}
-  .pub-media{display:none}
+  .pub-item,.fund-item{grid-template-columns:1fr;break-inside:avoid}
+  .pub-media,.fund-media{display:none}
 }
 
 /* print-friendly */
@@ -319,7 +338,7 @@ footer{
   <a href="#about">About</a>
   <a href="#interests">Research Interests</a>
   <a href="#publications">Publications</a>
-  <a href="#projects">Projects</a>
+  <a href="#funded">Projects</a>
   <a href="#experience">Experience</a>
   <a href="#teaching">Teaching</a>
 </nav>
@@ -450,6 +469,54 @@ footer{
 </div>
 
 <!-- PROJECTS -->
+<!-- FUNDED PROJECTS -->
+<div class="section" id="funded">
+  <h2>Funded Projects</h2>
+  <!-- Adapted from https://youngchae912.github.io/ -->
+
+  <div class="fund-item">
+    <div class="fund-media">
+      <img src="assets/projects/humanoid-manipulation.jpg" width="480" height="362" loading="lazy" alt="A two-armed humanoid robot with dexterous hands reaching for bottles and a cup on a table">
+    </div>
+    <div class="fund-details">
+      <div class="proj-head">
+        <span class="proj-name">Development of Intelligent Autonomous Manipulation Technology for Humanoids with Reduced Dependency on Real-World Data</span>
+        <span class="proj-date">Jul 2025 – Present</span>
+      </div>
+      <div class="fund-sponsor">Ministry of Science and ICT (MSIT)</div>
+      <div class="proj-tech">Humanoid Manipulation · Data-Efficient Learning · Robot Foundation Models</div>
+      <div class="fund-goal">Development and real-robot validation of a data-efficient humanoid manipulation model that reasons about intent and context to generate physical-interaction-based actions from small-scale real-world data</div>
+      <div class="proj-desc">
+        <ul>
+          <li>Use of no more than 10% of the real-world data required by conventional imitation learning</li>
+          <li>Demonstration of at least five service tasks in everyday environments</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="fund-item">
+    <div class="fund-media">
+      <img src="assets/projects/multimodal-rfm.jpg" width="480" height="360" loading="lazy" alt="Illustration: camera views and tactile maps of a grasped block feed a model that drives a robot arm placing the block">
+    </div>
+    <div class="fund-details">
+      <div class="proj-head">
+        <span class="proj-name">Robot Motion Generation AI based on Multimodal Vision/Tactile Information Driven by Language Model</span>
+        <span class="proj-date">Mar 2025 – Present</span>
+      </div>
+      <div class="fund-sponsor">National Research Foundation of Korea (NRF)</div>
+      <div class="proj-tech">Multimodal Robot Learning · Vision/Tactile Perception · Language Models</div>
+      <div class="fund-goal">Development of a Robot Foundation Model that generates object manipulation actions for autonomous goal achievement based on physical understanding, by integrating physical properties (force, tactile, and robot pose information) with 2D/3D visual information and natural language instructions</div>
+      <div class="proj-desc">
+        <ul>
+          <li>Construction of multimodal datasets for training a foundation model capable of understanding physical properties, including force and tactile data</li>
+          <li>Development of an RFM that performs language-instructed object manipulation tasks based on an understanding of the physical properties of both rigid and deformable objects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="section" id="projects">
   <h2>Research Projects</h2>
 
@@ -464,6 +531,22 @@ footer{
         <li>500 Hz admittance controller on the built-in wrist force/torque sensor, tuned on the real robot: 45% lighter hand guiding (17.8 → 9.7 N at 50 mm/s)</li>
         <li>Open-loop multisine identification revealed a 19 Hz link mode; a stability margin built on it explains every real-robot result</li>
         <li><a href="https://choiyoonji.github.io/ur5e-admittance/">Project Page</a> (videos, figures)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Adapted from https://youngchae912.github.io/ -->
+  <div class="proj-item">
+    <div class="proj-head">
+      <span class="proj-name"><a href="https://youtu.be/VcSFqA2gFCc" target="_blank" rel="noopener noreferrer">Task Integration with a VLM Planner and VLM Monitor</a></span>
+      <span class="proj-date">2026</span>
+    </div>
+    <div class="proj-authors">Y.-C. Son, in collaboration with <span class="me">Y.-J. Choi</span>, D.-K. Ko, and J.-W. Lee</div>
+    <div class="proj-tech">Long-Horizon Manipulation · VLM Planning · Execution Monitoring</div>
+    <div class="proj-desc">
+      <ul>
+        <li>Composing reusable VLA skills for long-horizon manipulation, with a VLM planner that sequences skills and a VLM monitor that checks each step during execution</li>
+        <li><a href="https://youtu.be/VcSFqA2gFCc" target="_blank" rel="noopener noreferrer">Video</a></li>
       </ul>
     </div>
   </div>
