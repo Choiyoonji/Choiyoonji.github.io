@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Command, Many Policies — Yoon-Ji Choi</title>
+<meta name="description" content="From one natural-language command to a seven-step task on a real dual-arm robot: VLA skills, VLA–VLM integration, a safety layer, model switching, state transitions and situation-aware playback.">
+<meta property="og:title" content="One Command, Many Policies">
+<meta property="og:description" content="VLA skills, VLA–VLM integration and a safety-gated runtime that runs a seven-step task on a real RB-Y1 from one sentence.">
+<meta property="og:image" content="assets/auto_full_8x.jpg">
+<style>
+  :root {
+    --ink: #1b2330;
+    --muted: #5b6677;
+    --line: #e3e7ee;
+    --bg: #ffffff;
+    --soft: #f5f7fa;
+    --accent: #0f766e;
+    --accent-soft: #e6f4f2;
+    --team: #6b7486;
+    --team-soft: #f1f3f6;
+    --red: #b42318;
+    --maxw: 1000px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--ink); background: var(--bg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  header { padding: 64px 0 28px; text-align: center; }
+  .eyebrow { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.15; margin: 10px 0 12px; letter-spacing: -.01em; }
+  .subtitle { font-size: clamp(17px, 2.2vw, 20px); color: var(--muted); max-width: 780px; margin: 0 auto; }
+  .byline { margin-top: 22px; font-size: 17px; font-weight: 600; }
+  .roles { margin: 8px auto 0; display: flex; gap: 6px 8px; flex-wrap: wrap; justify-content: center; max-width: 820px; }
+  .role { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .meta { margin-top: 12px; color: var(--muted); font-size: 14px; }
+  .pills { margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .pill { display: inline-block; padding: 7px 16px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }
+  .pill:hover { text-decoration: none; opacity: .88; }
+  .pill.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+  figure { margin: 0; }
+  .hero video, .clip video { width: 100%; display: block; border-radius: 12px; background: #000; }
+  .hero { margin: 8px auto 0; max-width: 840px; position: relative; }
+  .badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.62); color: #fff; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 6px; letter-spacing: .04em; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; line-height: 1.55; }
+  .cmd { font-style: italic; color: var(--ink); }
+
+  section { padding: 46px 0 6px; }
+  h2 { font-size: 26px; margin: 0 0 14px; letter-spacing: -.005em; }
+  h2 .no { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  h3 { font-size: 18px; margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 18px; }
+
+  .tldr { background: var(--soft); border-left: 4px solid var(--accent); padding: 18px 22px; border-radius: 8px; }
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 22px; }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 10px; text-align: center; }
+  .stat .n { font-size: 23px; font-weight: 700; color: var(--accent); line-height: 1.2; white-space: nowrap; }
+  .stat .l { font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 14px; background: #fff; }
+  a.card { color: inherit; display: block; transition: border-color .15s, box-shadow .15s; }
+  a.card:hover { text-decoration: none; border-color: var(--accent); box-shadow: 0 4px 16px rgba(15,118,110,.08); }
+  .card .tag { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; }
+  .card p { font-size: 15px; color: #313a48; margin: 6px 0 0; }
+  .card ul { margin: 8px 0 0; padding-left: 18px; font-size: 15px; color: #313a48; }
+  .card li { margin: 3px 0; }
+
+  .diagram { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: #fff; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .k { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .k.pol { background: #e8f0fe; color: #1d4ed8; }
+  .k.tra { background: #fdf2e5; color: #b45309; }
+  .k.fn  { background: var(--accent-soft); color: var(--accent); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .yt { position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000; }
+  .yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 16px 22px; }
+  .timeline li::before { content: ""; position: absolute; left: -7px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+  .timeline .d { font-weight: 600; font-size: 14px; color: var(--accent); }
+  .timeline .t { font-size: 15px; }
+
+  .shot img { width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
+
+  footer { padding: 36px 0 60px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 40px; }
+
+  @media (max-width: 860px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    header { padding-top: 40px; }
+  }
+  @media (max-width: 520px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="eyebrow">Robot learning · Systems · Safety</div>
+  <h1>One Command, Many Policies</h1>
+  <p class="subtitle">From one natural-language command to a seven-step task on a real dual-arm robot — learned VLA skills, a VLM planner and monitor,
+  and a safety-gated runtime that decides what to play next.</p>
+  <div class="byline"><a href="https://choiyoonji.github.io/" style="color:inherit">Yoon-Ji Choi</a></div>
+  <div class="roles">
+    <span class="role">VLA skill training</span>
+    <span class="role">VLA–VLM system integration</span>
+    <span class="role">Safety layer design</span>
+    <span class="role">Switching between models</span>
+    <span class="role">State transitions</span>
+    <span class="role">Situation-aware playback</span>
+  </div>
+  <div class="meta">Team project with Y.-C. Son, D.-K. Ko, and J.-W. Lee · Interactive Robotics Lab, Dongguk University<br>Oct – Nov 2026 · Rainbow Robotics RB-Y1 with RH56F1 dexterous hands</div>
+  <div class="pills">
+    <a class="pill" href="#demo">Demo video</a>
+    <a class="pill ghost" href="#system">System</a>
+    <a class="pill ghost" href="#results">Real-robot results</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <figure class="hero">
+    <video src="assets/auto_full_8x.mp4" poster="assets/auto_full_8x.jpg" autoplay muted loop playsinline preload="metadata"></video>
+    <span class="badge">AUTO · REAL ROBOT · 8×</span>
+    <figcaption>
+      <span class="cmd">“First take the Coke out of the fridge, then make a cocktail: orange first, then blue.”</span>
+      One sentence, seven subtasks — open the fridge, take out the can, close the fridge, pick up a glass, pour, pour again, place the glass —
+      handed between four VLA policy servers through one guarded control path. No per-step approval: the operator arms the run once and keeps a hand on HOLD.
+    </figcaption>
+  </figure>
+
+  <section>
+    <div class="tldr">
+      <p class="lead" style="margin:0">
+        Learned skills usually live alone: one model, one deployment script, one task. To get a robot to do a long task from a single
+        sentence, the skills have to work as one system. <b>I trained VLA skills, integrated them with a VLM planner and progress monitor,
+        and built the runtime in between</b> — a safety layer every command passes through, clean switching between models, explicit
+        state transitions for every subtask, and a playback engine that picks a learned policy, a recorded trajectory, or a predefined
+        motion depending on where the robot is and how the last step ended.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">7</div><div class="l">subtasks from one sentence, on the real robot</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">VLA servers live at once, one motion lease</div></div>
+      <div class="stat"><div class="n">26</div><div class="l">skills in one catalog</div></div>
+      <div class="stat"><div class="n">~145 ms</div><div class="l">switch between position and impedance control</div></div>
+      <div class="stat"><div class="n">21–40 ms</div><div class="l">stop signal to HOLD (simulator)</div></div>
+      <div class="stat"><div class="n">754</div><div class="l">automated tests, plus simulator runs</div></div>
+    </div>
+  </section>
+
+  <section id="contribution">
+    <h2>My contributions</h2>
+    <div class="grid3">
+      <a class="card" href="#skills">
+        <div class="tag">01 · VLA skill training</div>
+        <h3>Skills the robot can call</h3>
+        <p>Fine-tuned GR00T-based VLA policies for the cocktail skills — picking up cans and glasses, pouring, and shaking — including
+        separate per-segment models so a task can be resumed from the middle.</p>
+      </a>
+      <a class="card" href="#system">
+        <div class="tag">02 · VLA–VLM integration</div>
+        <h3>Planner, monitor and policies as one system</h3>
+        <p>Each plan step from the VLM planner (skill + object) becomes an executable recipe; the VLM monitor’s progress signal
+        decides when a policy stops and the next one starts. One bridge, one contract, one execution ledger.</p>
+      </a>
+      <a class="card" href="#safety">
+        <div class="tag">03 · Safety layer design</div>
+        <h3>One gate for every command</h3>
+        <p>A single gateway owns the body, hands and neck. Out-of-limit commands are rejected, not clipped; watchdogs on every link;
+        FAULT is cleared only by a human; real-robot runs need an approval latch and a locked mode.</p>
+      </a>
+      <a class="card" href="#switching">
+        <div class="tag">04 · Switching between models</div>
+        <h3>Hand-offs without surprises</h3>
+        <p>All policy servers stay loaded; exactly one holds the motion lease. A control epoch drops stale actions from the previous
+        model, the controller switches between impedance and position mode, and a held object stays gripped across the hand-off.</p>
+      </a>
+      <a class="card" href="#states">
+        <div class="tag">05 · State transitions</div>
+        <h3>Every step is a state machine</h3>
+        <p>Control modes (HOLD, MANUAL, SEMIAUTO, AUTO, FAULT) and each subtask’s lifecycle — lease, check, align, run, hold, done —
+        are explicit, logged and only move along allowed edges.</p>
+      </a>
+      <a class="card" href="#playback">
+        <div class="tag">06 · Situation-aware playback</div>
+        <h3>Policy, trajectory or function</h3>
+        <p>For each step the runtime plays what fits the moment: a learned policy, a recorded trajectory under its recorded control
+        mode, or a predefined motion such as start-pose alignment, a via-waypoint, or HOME after an abnormal stop.</p>
+      </a>
+    </div>
+  </section>
+
+  <section id="system">
+    <h2>System overview</h2>
+    <p>The VLM planner/monitor models and some of the skill policies come from teammates; I integrated them with the skills I trained.
+    Everything inside the green frame is the runtime I designed and built.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 960 520" role="img" aria-label="System architecture: models on the left, the runtime in the middle, robot hardware at the bottom">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b6677"/>
+          </marker>
+          <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/>
+          </marker>
+          <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#b42318"/>
+          </marker>
+        </defs>
+        <style>
+          .t  { font: 600 15px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #1b2330; }
+          .s  { font: 400 12.5px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #5b6677; }
+          .ta { font: 600 15px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #0f766e; }
+          .tg { font: 600 15px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #5b6677; }
+          .lab{ font: 500 11px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #5b6677; }
+          .fr { font: 700 12px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #0f766e; letter-spacing: .08em; }
+        </style>
+
+        <!-- command -->
+        <rect x="20" y="8" width="240" height="44" rx="22" fill="#1b2330"/>
+        <text x="140" y="35" text-anchor="middle" style="font:500 13px -apple-system,'Segoe UI',Roboto,Arial,sans-serif;fill:#fff">“Take the Coke out, then…”</text>
+        <line x1="140" y1="52" x2="140" y2="102" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+
+        <!-- runtime frame -->
+        <rect x="290" y="70" width="652" height="352" rx="14" fill="#f6fbfa" stroke="#0f766e" stroke-width="2"/>
+        <text x="306" y="92" class="fr">RUNTIME — DESIGNED &amp; BUILT BY ME</text>
+
+        <!-- center stack -->
+        <rect x="310" y="104" width="300" height="62" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+        <text x="460" y="130" text-anchor="middle" class="ta">VLM bridge &amp; mode controller</text>
+        <text x="460" y="150" text-anchor="middle" class="s">plan step → recipe · MANUAL / SEMIAUTO / AUTO</text>
+
+        <rect x="310" y="184" width="300" height="62" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+        <text x="460" y="210" text-anchor="middle" class="ta">Skill runtime &amp; playback</text>
+        <text x="460" y="230" text-anchor="middle" class="s">states · model switching · playback</text>
+
+        <rect x="310" y="264" width="300" height="62" rx="10" fill="#0f766e"/>
+        <text x="460" y="290" text-anchor="middle" style="font:700 15px -apple-system,'Segoe UI',Roboto,Arial,sans-serif;fill:#fff">Safety gateway</text>
+        <text x="460" y="310" text-anchor="middle" style="font:400 12.5px -apple-system,'Segoe UI',Roboto,Arial,sans-serif;fill:#d7efec">limits · watchdogs · lease / epoch · HOLD</text>
+
+        <rect x="310" y="344" width="300" height="62" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+        <text x="460" y="370" text-anchor="middle" class="ta">Control-loop extension (robot PC)</text>
+        <text x="460" y="390" text-anchor="middle" class="s">in-loop HOLD · position ↔ impedance</text>
+
+        <line x1="460" y1="166" x2="460" y2="182" stroke="#0f766e" stroke-width="1.8" marker-end="url(#aha)"/>
+        <line x1="460" y1="246" x2="460" y2="262" stroke="#0f766e" stroke-width="1.8" marker-end="url(#aha)"/>
+        <line x1="460" y1="326" x2="460" y2="342" stroke="#0f766e" stroke-width="1.8" marker-end="url(#aha)"/>
+
+        <!-- operator console -->
+        <rect x="660" y="104" width="262" height="142" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+        <text x="791" y="132" text-anchor="middle" class="ta">Operator console</text>
+        <text x="791" y="156" text-anchor="middle" class="s">live cameras · skill controls</text>
+        <text x="791" y="176" text-anchor="middle" class="s">approve next subtask</text>
+        <text x="791" y="196" text-anchor="middle" class="s">HOLD on space · REPLAY</text>
+        <text x="791" y="224" text-anchor="middle" class="lab">human in the loop</text>
+        <line x1="658" y1="135" x2="612" y2="135" stroke="#0f766e" stroke-width="1.6" marker-end="url(#aha)"/>
+        <text x="617" y="128" class="lab">approve</text>
+        <path d="M 700 246 L 700 295 L 612 295" fill="none" stroke="#b42318" stroke-width="1.8" marker-end="url(#ahr)"/>
+        <text x="706" y="276" class="lab" style="fill:#b42318;font-weight:700">HOLD</text>
+
+        <!-- trajectories (mine) -->
+        <rect x="660" y="344" width="262" height="62" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+        <text x="791" y="370" text-anchor="middle" class="ta">Trajectory &amp; motion library</text>
+        <text x="791" y="390" text-anchor="middle" class="s">recorded demos · poses · via-waypoints</text>
+        <path d="M 658 375 L 636 375 L 636 225 L 612 225" fill="none" stroke="#0f766e" stroke-width="1.6" marker-end="url(#aha)"/>
+
+        <!-- models -->
+        <rect x="20" y="104" width="240" height="62" rx="10" fill="#f1f3f6" stroke="#a8b0bf" stroke-dasharray="5 4"/>
+        <text x="140" y="130" text-anchor="middle" class="tg">VLM planner &amp; monitor</text>
+        <text x="140" y="150" text-anchor="middle" class="s">teammate’s models · integrated by me</text>
+        <line x1="262" y1="128" x2="308" y2="128" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+        <line x1="308" y1="146" x2="262" y2="146" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+        <text x="265" y="121" class="lab">plan</text>
+        <text x="266" y="162" class="lab">status</text>
+
+        <rect x="20" y="184" width="240" height="62" rx="10" fill="#fff" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="140" y="210" text-anchor="middle" class="ta">VLA policy servers × 4</text>
+        <text x="140" y="230" text-anchor="middle" class="s">skills I trained + team skills · 1 GPU</text>
+        <line x1="262" y1="207" x2="308" y2="207" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+        <line x1="308" y1="223" x2="262" y2="223" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+        <text x="266" y="200" class="lab">actions</text>
+        <text x="266" y="240" class="lab">obs</text>
+
+        <rect x="20" y="264" width="240" height="62" rx="10" fill="#f1f3f6" stroke="#a8b0bf" stroke-dasharray="5 4"/>
+        <text x="140" y="290" text-anchor="middle" class="tg">Cameras</text>
+        <text x="140" y="310" text-anchor="middle" class="s">ego + wrist · shared daemon</text>
+        <line x1="140" y1="264" x2="140" y2="248" stroke="#5b6677" stroke-width="1.4" marker-end="url(#ah)"/>
+
+        <rect x="20" y="344" width="240" height="62" rx="10" fill="#f1f3f6" stroke="#a8b0bf" stroke-dasharray="5 4"/>
+        <text x="140" y="370" text-anchor="middle" class="tg">Device drivers</text>
+        <text x="140" y="390" text-anchor="middle" class="s">teleop loop · hands · neck</text>
+        <line x1="262" y1="375" x2="308" y2="375" stroke="#5b6677" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <text x="266" y="368" class="lab">extends</text>
+
+        <!-- hardware -->
+        <rect x="310" y="446" width="300" height="56" rx="10" fill="#1b2330"/>
+        <text x="460" y="470" text-anchor="middle" style="font:700 15px -apple-system,'Segoe UI',Roboto,Arial,sans-serif;fill:#fff">Real robot</text>
+        <text x="460" y="489" text-anchor="middle" style="font:400 12.5px -apple-system,'Segoe UI',Roboto,Arial,sans-serif;fill:#c9d1dc">RB-Y1 body · RH56F1 hands · 6-axis neck</text>
+        <line x1="460" y1="406" x2="460" y2="444" stroke="#0f766e" stroke-width="2" marker-end="url(#aha)"/>
+      </svg>
+      <div class="legend">
+        <span><span class="sw" style="background:#e6f4f2;border:1.5px solid #0f766e"></span>Built by me</span>
+        <span><span class="sw" style="background:#fff;border:1.5px dashed #0f766e"></span>Models partly trained by me</span>
+        <span><span class="sw" style="background:#f1f3f6;border:1.5px dashed #a8b0bf"></span>Teammates’ components, integrated as-is</span>
+        <span><span class="sw" style="background:#b42318"></span>Operator HOLD path</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2><span class="no">01</span>VLA skill training</h2>
+    <p>I fine-tuned GR00T-based VLA policies for the skills the cocktail task needs, each with its own start pose, safety limits and
+    recorded reference demonstrations, and registered them in the same catalog as the team’s skills.</p>
+    <table>
+      <tr><th>Skill</th><th>What it does</th><th>Notes</th></tr>
+      <tr><td>Can pick-and-place</td><td>Take a can (Coke, Pocari) and place it on the tray</td><td>Used for “take the Coke out of the fridge”</td></tr>
+      <tr><td>Glass pick</td><td>Pick up an empty glass for pouring</td><td>First step of every cocktail</td></tr>
+      <tr><td>Bottle pour</td><td>Pour from a small bottle into the shaker (left hand)</td><td>Paired with a recorded-trajectory version</td></tr>
+      <tr><td>Shake</td><td>Pick up the shaker, shake, put it back</td><td>Three models: full sequence, shake only, pick/place only — each segment can also be replayed from data</td></tr>
+    </table>
+  </section>
+
+  <section id="integration">
+    <h2><span class="no">02</span>VLA–VLM system integration</h2>
+    <div class="grid2">
+      <div>
+        <p>The VLM planner reads the scene and the catalogs and returns a plan as <i>skill + object</i> pairs. The integration layer maps
+        each pair to a recipe — which VLA server, which start pose, which control mode, what to check first, and the time and chunk
+        ceilings for that step — and refuses plans that break task preconditions (for example, retrieving a can before the door is open).</p>
+        <p>While a policy runs, the VLM monitor reports progress about once a second from the chest and wrist cameras. Its judgement is only
+        trusted after the policy has actually started moving, and its “done” signal triggers the soft stop and the hand-off to the next step.
+        The planner can propose, but it can never approve a motion on its own.</p>
+      </div>
+      <div class="card" style="align-self:start">
+        <div class="tag">What crosses the bridge</div>
+        <ul>
+          <li><b>planner → robot</b>: plan steps, start / stop / abort</li>
+          <li><b>robot → planner</b>: per-step state, reasons for every stop</li>
+          <li><b>monitor → runtime</b>: progress and completion</li>
+          <li><b>operator → runtime</b>: approval (SEMIAUTO), arm (AUTO), HOLD</li>
+          <li>Every command and transition is written to an execution ledger</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="safety">
+    <h2><span class="no">03</span>Safety layer design</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="tag">Gateway</div>
+        <ul>
+          <li>Single writer for body, hands and neck; policies have no device access</li>
+          <li>Joint, velocity and workspace limits (URDF forward kinematics) — <b>reject, don’t clip</b></li>
+          <li>Five consecutive violations raise FAULT; only a human can clear it</li>
+          <li>Watchdogs on worker, operator, body, hands and planner links</li>
+          <li>Loss of a hand target holds the last value, never zero</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="tag">Who may move the robot</div>
+        <ul>
+          <li>One approval = one run of one subtask, bound to the step, the control epoch and the approver; expires after 60 s</li>
+          <li>A real-robot configuration loads only with the approval latch, a single locked mode and a skill allow-list</li>
+          <li>Fail-closed endpoint guard: the real robot is unreachable unless explicitly allowed; the simulator is pinned by image digest</li>
+          <li>Robot-side loop exits after ~0.5 s of failed sends instead of replaying a stale target</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div>
+        <h3>Three ways to run the same skills</h3>
+        <table>
+          <tr><th></th><th>MANUAL</th><th>SEMIAUTO</th><th>AUTO</th></tr>
+          <tr><td>Picks the skill</td><td>operator</td><td>planner</td><td>planner</td></tr>
+          <tr><td>Approval</td><td>—</td><td>every subtask</td><td>arm once</td></tr>
+          <tr><td>During a run</td><td>drives each phase</td><td>HOLD / abort</td><td>HOLD / E-stop</td></tr>
+          <tr><td>End of episode</td><td>—</td><td>HOME card</td><td>automatic HOME</td></tr>
+        </table>
+      </div>
+      <figure class="shot">
+        <img src="assets/console_manual_sim.jpg" alt="Operator console in MANUAL mode against the simulator: three camera tiles, a 3D view of the robot at the fridge, a red HOLD bar and skill control buttons">
+        <figcaption>Operator console in MANUAL mode, driving the simulator with recorded camera input during development.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="switching">
+    <h2><span class="no">04</span>Switching between models</h2>
+    <p>The fridge task alone uses two model families — one for the door, another for the can — and in the cocktail a glass picked up by
+    one model is poured by another. Switching has to be boring.</p>
+    <div class="grid3">
+      <div class="card"><div class="tag">Always loaded</div><p>All VLA servers stay warm on one GPU; each runs behind its own worker process and proxy, so swapping models never means reloading weights or touching the robot driver.</p></div>
+      <div class="card"><div class="tag">One lease, new epoch</div><p>Exactly one worker holds the motion lease. Every swap bumps the control epoch, so any late action from the previous model is dropped at the gateway.</p></div>
+      <div class="card"><div class="tag">Controller &amp; grip</div><p>Door skills run in impedance control, pick and pour in position control; the switch takes about 145 ms. A glass held in the right hand stays gripped while the next model takes over.</p></div>
+    </div>
+  </section>
+
+  <section id="states">
+    <h2><span class="no">05</span>State transitions</h2>
+    <p>Two state machines run the whole system: the gateway’s control mode, and the lifecycle of each subtask. Only allowed edges exist;
+    every transition is logged with its reason.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 960 350" role="img" aria-label="Two state machines: control mode and subtask lifecycle">
+        <defs>
+          <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b6677"/>
+          </marker>
+          <marker id="sr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#b42318"/>
+          </marker>
+        </defs>
+        <style>
+          .h  { font: 700 12px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #0f766e; letter-spacing: .08em; }
+          .n  { font: 700 13px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #1b2330; }
+          .nw { font: 700 13px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #fff; }
+          .e  { font: 500 11px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #5b6677; }
+        </style>
+
+        <text x="20" y="22" class="h">CONTROL MODE (GATEWAY)</text>
+        <rect x="20" y="72" width="110" height="40" rx="8" fill="#f1f3f6" stroke="#a8b0bf"/>
+        <text x="75" y="97" text-anchor="middle" class="n">BOOT</text>
+        <rect x="190" y="72" width="110" height="40" rx="8" fill="#1b2330"/>
+        <text x="245" y="97" text-anchor="middle" class="nw">HOLD</text>
+        <rect x="400" y="30" width="130" height="36" rx="8" fill="#e6f4f2" stroke="#0f766e"/>
+        <text x="465" y="53" text-anchor="middle" class="n">MANUAL</text>
+        <rect x="400" y="74" width="130" height="36" rx="8" fill="#e6f4f2" stroke="#0f766e"/>
+        <text x="465" y="97" text-anchor="middle" class="n">SEMIAUTO</text>
+        <rect x="400" y="118" width="130" height="36" rx="8" fill="#e6f4f2" stroke="#0f766e"/>
+        <text x="465" y="141" text-anchor="middle" class="n">AUTO</text>
+        <rect x="640" y="72" width="120" height="40" rx="8" fill="#b42318"/>
+        <text x="700" y="97" text-anchor="middle" class="nw">FAULT</text>
+
+        <line x1="130" y1="92" x2="188" y2="92" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="302" y1="88" x2="398" y2="50" stroke="#5b6677" stroke-width="1.4" marker-start="url(#sa)" marker-end="url(#sa)"/>
+        <line x1="302" y1="92" x2="398" y2="92" stroke="#5b6677" stroke-width="1.4" marker-start="url(#sa)" marker-end="url(#sa)"/>
+        <line x1="302" y1="96" x2="398" y2="134" stroke="#5b6677" stroke-width="1.4" marker-start="url(#sa)" marker-end="url(#sa)"/>
+        <text x="20" y="140" class="e">entering or leaving a mode</text><text x="20" y="155" class="e">bumps the control epoch</text>
+        <line x1="530" y1="50" x2="638" y2="86" stroke="#b42318" stroke-width="1.4" marker-end="url(#sr)"/>
+        <line x1="530" y1="92" x2="638" y2="92" stroke="#b42318" stroke-width="1.4" marker-end="url(#sr)"/>
+        <line x1="530" y1="134" x2="638" y2="98" stroke="#b42318" stroke-width="1.4" marker-end="url(#sr)"/>
+        <path d="M 700 112 C 700 196 245 196 245 114" fill="none" stroke="#5b6677" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#sa)"/>
+        <text x="472" y="190" text-anchor="middle" class="e">human acknowledgement only</text>
+        <text x="780" y="64" class="e">to FAULT:</text>
+        <text x="780" y="80" class="e">5 limit violations in a row</text>
+        <text x="780" y="96" class="e">body / hand / neck link lost</text>
+        <text x="780" y="112" class="e">worker or model server lost</text>
+        <text x="780" y="128" class="e">profile switch failed</text>
+
+        <line x1="20" y1="214" x2="940" y2="214" stroke="#e3e7ee"/>
+        <text x="20" y="240" class="h">ONE SUBTASK (COMMAND LIFECYCLE)</text>
+        <g>
+          <rect x="20"  y="256" width="102" height="38" rx="8" fill="#f1f3f6" stroke="#a8b0bf"/><text x="71"  y="280" text-anchor="middle" class="n">ACCEPTED</text>
+          <rect x="138" y="256" width="102" height="38" rx="8" fill="#f1f3f6" stroke="#a8b0bf"/><text x="189" y="280" text-anchor="middle" class="n">PREPARING</text>
+          <rect x="256" y="256" width="102" height="38" rx="8" fill="#e6f4f2" stroke="#0f766e"/><text x="307" y="280" text-anchor="middle" class="n">LEASED</text>
+          <rect x="374" y="256" width="102" height="38" rx="8" fill="#e6f4f2" stroke="#0f766e"/><text x="425" y="280" text-anchor="middle" class="n">CHECKING</text>
+          <rect x="492" y="256" width="102" height="38" rx="8" fill="#e6f4f2" stroke="#0f766e"/><text x="543" y="280" text-anchor="middle" class="n">ALIGNING</text>
+          <rect x="610" y="256" width="102" height="38" rx="8" fill="#e6f4f2" stroke="#0f766e"/><text x="661" y="280" text-anchor="middle" class="n">RUNNING</text>
+          <rect x="728" y="256" width="102" height="38" rx="8" fill="#1b2330"/><text x="779" y="280" text-anchor="middle" class="nw">HOLDING</text>
+          <rect x="846" y="256" width="102" height="38" rx="8" fill="#0f766e"/><text x="897" y="280" text-anchor="middle" class="nw">DONE</text>
+          <rect x="846" y="306" width="102" height="34" rx="8" fill="#fff" stroke="#b42318"/><text x="897" y="328" text-anchor="middle" class="n" style="fill:#b42318">ABORTED</text>
+        </g>
+        <line x1="122" y1="275" x2="136" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="240" y1="275" x2="254" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="358" y1="275" x2="372" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="476" y1="275" x2="490" y2="275" stroke="#5b6677" stroke-width="1.4" marker-start="url(#sa)" marker-end="url(#sa)"/>
+        <line x1="594" y1="275" x2="608" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="712" y1="275" x2="726" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="830" y1="275" x2="844" y2="275" stroke="#5b6677" stroke-width="1.4" marker-end="url(#sa)"/>
+        <line x1="779" y1="294" x2="844" y2="322" stroke="#b42318" stroke-width="1.4" marker-end="url(#sr)"/>
+        <text x="425" y="316" text-anchor="middle" class="e">order set per recipe (check before or after align)</text>
+        <text x="661" y="316" text-anchor="middle" class="e">soft stop on “done”</text>
+        <text x="20" y="330" class="e">Oct 21 AUTO session: 77 subtask commands · 65 done · 11 aborted · 1 fault</text>
+      </svg>
+    </div>
+  </section>
+
+  <section id="playback">
+    <h2><span class="no">06</span>Situation-aware playback</h2>
+    <p>Not every step should be a neural network. For each subtask the runtime chooses between three kinds of playback — a
+    <span class="k pol">policy</span>, a recorded <span class="k tra">trajectory</span>, or a predefined <span class="k fn">function</span> — based on the robot’s current state and how the previous step ended.</p>
+    <table>
+      <tr><th>Situation</th><th>What plays</th></tr>
+      <tr><td>The step needs perception and adaptation</td><td><span class="k pol">policy</span> VLA server for that skill, chunked or streaming</td></tr>
+      <tr><td>A segment is better served by a known-good demonstration</td><td><span class="k tra">trajectory</span> recorded data replayed under the control mode it was recorded in (position or impedance), at 0.25–1×, checked by the gateway before it starts</td></tr>
+      <tr><td>The robot is not at the skill’s start pose</td><td><span class="k fn">function</span> ramp to the start pose — through an intermediate waypoint when the gap is large</td></tr>
+      <tr><td>Already within 1° of the replay start</td><td><span class="k fn">function</span> skip the alignment ramp and play immediately</td></tr>
+      <tr><td>The previous step ended abnormally</td><td><span class="k fn">function</span> HOME is inserted before the next step</td></tr>
+      <tr><td>The episode is over (AUTO)</td><td><span class="k fn">function</span> automatic HOME</td></tr>
+      <tr><td>Replay starts too far from where the robot is, or drifts while playing</td><td>refused above an 8° start gap · aborted above a 20° tracking error</td></tr>
+    </table>
+    <p class="note">The shaking task can be played as one model, as per-segment models (pick · shake · place), or as per-segment recorded trajectories — the same catalog entry point for all of them.</p>
+  </section>
+
+  <section id="demo">
+    <h2>Real-robot runs</h2>
+    <div class="grid2">
+      <figure class="clip" style="position:relative">
+        <video src="assets/fridge_semiauto_4x.mp4" poster="assets/fridge_semiauto_4x.jpg" controls muted loop playsinline preload="metadata"></video>
+        <span class="badge">SEMIAUTO · 4×</span>
+        <figcaption><b>Fridge, three subtasks.</b> Open the door, take out the can, close the door — each subtask approved on the console, switching from impedance control for the door to position control for the can and back.</figcaption>
+      </figure>
+      <figure class="clip" style="position:relative">
+        <video src="assets/cocktail_semiauto_8x.mp4" poster="assets/cocktail_semiauto_8x.jpg" controls muted loop playsinline preload="metadata"></video>
+        <span class="badge">SEMIAUTO · 8×</span>
+        <figcaption><b>Cocktail, four subtasks.</b> Pick up a glass, pour, pour again, place — two model families behind the same gateway, with the glass held through the hand-off.</figcaption>
+      </figure>
+    </div>
+
+    <h3 style="margin-top:30px">Full demo</h3>
+    <div class="yt">
+      <iframe src="https://www.youtube-nocookie.com/embed/VcSFqA2gFCc" title="Full demo on the real robot" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+    <p class="note">The whole pipeline on the real robot, from the command to the last subtask. Video by YoungChae Son · <a href="https://www.youtube.com/watch?v=VcSFqA2gFCc">open on YouTube</a>.</p>
+  </section>
+
+  <section id="results">
+    <h2>Real-robot results</h2>
+    <table>
+      <tr><th>Date</th><th>Mode</th><th>Task</th><th>Episodes</th><th>All subtasks done</th></tr>
+      <tr><td>Oct 16</td><td>SEMIAUTO</td><td>Fridge: open → take can → close (3)</td><td class="num">27</td><td class="num">13</td></tr>
+      <tr><td>Oct 20</td><td>SEMIAUTO</td><td>Cocktail: pick glass → pour → pour → place (4)</td><td class="num">19</td><td class="num">12</td></tr>
+      <tr><td>Oct 21</td><td>AUTO</td><td>Fridge + cocktail from one sentence (7)</td><td class="num">18</td><td class="num">6 · 7.7–8.6 min each</td></tr>
+    </table>
+    <p class="note">Counts come from the runtime’s execution ledger; an episode counts when every subtask reported done. Episodes include runs the operator
+    stopped on purpose while tuning, and runs handed back to MANUAL. On Oct 21 the fridge step failed the first five AUTO attempts; matching the AUTO
+    recipe to the start-up sequence used in MANUAL (via-waypoint, align, then check) fixed it, and complete runs followed.</p>
+  </section>
+
+  <section>
+    <h2>Engineering notes</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="tag">Reject, don’t clip</div>
+        <p>Clipping an out-of-range command hides a bug and still moves the robot somewhere nobody asked for. The gateway refuses the command,
+        counts the violation and escalates to FAULT.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Stale targets</div>
+        <p>The very first real-robot run ended in an operator E-stop and exposed a stale-target hazard when commands stop arriving.
+        The robot-side loop now exits after 30 consecutive send failures instead of replaying an old target.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Hours-long sessions</div>
+        <p>After about two hours the robot-side loop held its whole recording in memory, starved the interpreter lock, and opened multi-second
+        gaps that tripped the body-link watchdog. Traced from the logs; fixed with an idle-time refresh and a watchdog.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Bit-identical integration</div>
+        <p>Routing a policy through the gateway must not change what it does. On the same recorded inputs, commands through the new path
+        matched the original stand-alone clients exactly — zero difference for body, hands and neck.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Timeline</h2>
+    <ul class="timeline">
+      <li><div class="d">Oct 3</div><div class="t">Runtime, gateway, control-loop extension and console working end to end in the Docker simulator.</div></li>
+      <li><div class="d">Oct 7</div><div class="t">First real-robot runs through the gateway.</div></li>
+      <li><div class="d">Oct 11</div><div class="t">v1.0 — every skill drivable from one console.</div></li>
+      <li><div class="d">Oct 16</div><div class="t">SEMIAUTO with the VLM planner and monitor on the real robot (fridge).</div></li>
+      <li><div class="d">Oct 20</div><div class="t">SEMIAUTO cocktail: four subtasks across two model families.</div></li>
+      <li><div class="d">Oct 21</div><div class="t">AUTO: seven subtasks from one sentence, no per-step approval.</div></li>
+      <li><div class="d">Nov 10–12</div><div class="t">New pouring and shaking skills, per-segment models, and trajectory replay under the recorded control mode.</div></li>
+    </ul>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><b>Credits.</b> The VLM planner and progress monitor models, some of the skill policies, and the robot’s device drivers were developed by teammates.
+    I trained the GR00T-based skills listed above, integrated everything into one system, designed and built the runtime and safety layer, and operated the real-robot sessions.
+    Full demo video by YoungChae Son.</p>
+    <p>© 2026 Yoon-Ji Choi · <a href="https://choiyoonji.github.io/">choiyoonji.github.io</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
