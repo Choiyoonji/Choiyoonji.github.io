@@ -133,15 +133,15 @@
     </figure>
     <p class="cap"><span class="cmd">“First take the Coke out of the fridge, then make a cocktail: orange first, then blue.”</span>
       Open the fridge, take out the can, close the fridge, pick up a glass, pour, pour again, place the glass — handed between four
-      VLA policy servers through one guarded control path. The operator arms the run once and keeps a hand on HOLD.</p>
+      VLA policy servers through one guarded control path.</p>
 
     <div class="stats">
       <div class="stat"><div class="v">7 subtasks</div>
-        <div class="l">from one sentence on the real robot, with no per-step approval; six complete autonomous runs in one session.</div></div>
+        <div class="l">from one sentence on the real robot, with no per-step approval.</div></div>
       <div class="stat"><div class="v">4 VLA servers</div>
-        <div class="l">loaded at once on one GPU behind a single motion lease; position ↔ impedance control switch in about 145 ms.</div></div>
+        <div class="l">loaded at once on one GPU, with one model in control at a time.</div></div>
       <div class="stat"><div class="v">21–40 ms</div>
-        <div class="l">from a stop signal to the robot holding still (simulator), through the one gateway every command must pass.</div></div>
+        <div class="l">from a stop signal to the robot holding still, measured in simulation.</div></div>
     </div>
     <ul class="skills">
       <li>VLA fine-tuning</li><li>VLA–VLM integration</li><li>Safety layer design</li><li>Multi-model switching</li>
@@ -162,7 +162,7 @@
         <div class="tag">02 · VLA–VLM integration</div>
         <h3>Planner, monitor and policies as one system</h3>
         <p>Each plan step from the VLM planner (skill + object) becomes an executable recipe; the VLM monitor’s progress signal
-        decides when a policy stops and the next one starts. One bridge, one contract, one execution ledger.</p>
+        decides when a policy stops and the next one starts.</p>
       </a>
       <a class="card" href="#safety">
         <div class="tag">03 · Safety layer design</div>
@@ -310,14 +310,13 @@
 
   <section id="skills">
     <h2><span class="no">01</span>VLA skill training</h2>
-    <p>I fine-tuned GR00T-based VLA policies for the skills the cocktail task needs, each with its own start pose, safety limits and
-    recorded reference demonstrations, and registered them in the same catalog as the team’s skills.</p>
+    <p>I fine-tuned GR00T-based VLA policies for the skills the cocktail task needs and registered them in the same catalog as the team’s skills.</p>
     <table>
-      <tr><th>Skill</th><th>What it does</th><th>Notes</th></tr>
-      <tr><td>Can pick-and-place</td><td>Take a can (Coke, Pocari) and place it on the tray</td><td>Used for “take the Coke out of the fridge”</td></tr>
-      <tr><td>Glass pick</td><td>Pick up an empty glass for pouring</td><td>First step of every cocktail</td></tr>
-      <tr><td>Bottle pour</td><td>Pour from a small bottle into the shaker (left hand)</td><td>Paired with a recorded-trajectory version</td></tr>
-      <tr><td>Shake</td><td>Pick up the shaker, shake, put it back</td><td>Three models: full sequence, shake only, pick/place only — each segment can also be replayed from data</td></tr>
+      <tr><th>Skill</th><th>What it does</th></tr>
+      <tr><td>Can pick-and-place</td><td>Take a can and place it on the tray</td></tr>
+      <tr><td>Glass pick</td><td>Pick up an empty glass for pouring</td></tr>
+      <tr><td>Bottle pour</td><td>Pour from a small bottle into the shaker</td></tr>
+      <tr><td>Shake</td><td>Pick up the shaker, shake, put it back — as one model or as per-segment models</td></tr>
     </table>
   </section>
 
@@ -326,9 +325,8 @@
     <div class="grid2">
       <div>
         <p>The VLM planner reads the scene and the catalogs and returns a plan as <i>skill + object</i> pairs. The integration layer maps
-        each pair to a recipe — which VLA server, which start pose, which control mode, what to check first, and the time and chunk
-        ceilings for that step — and refuses plans that break task preconditions (for example, retrieving a can before the door is open).</p>
-        <p>While a policy runs, the VLM monitor reports progress about once a second from the chest and wrist cameras. Its judgement is only
+        each pair to a recipe — which VLA server, start pose and control mode to use — and refuses plans that break task preconditions (for example, retrieving a can before the door is open).</p>
+        <p>While a policy runs, the VLM monitor reports its progress. Its judgement is only
         trusted after the policy has actually started moving, and its “done” signal triggers the soft stop and the hand-off to the next step.
         The planner can propose, but it can never approve a motion on its own.</p>
       </div>
@@ -355,7 +353,6 @@
           <li>Joint, velocity and workspace limits (URDF forward kinematics) — <b>reject, don’t clip</b></li>
           <li>Five consecutive violations raise FAULT; only a human can clear it</li>
           <li>Watchdogs on worker, operator, body, hands and planner links</li>
-          <li>Loss of a hand target holds the last value, never zero</li>
         </ul>
       </div>
       <div class="card">
@@ -363,7 +360,7 @@
         <ul>
           <li>One approval = one run of one subtask, bound to the step, the control epoch and the approver; expires after 60 s</li>
           <li>A real-robot configuration loads only with the approval latch, a single locked mode and a skill allow-list</li>
-          <li>Fail-closed endpoint guard: the real robot is unreachable unless explicitly allowed; the simulator is pinned by image digest</li>
+          <li>Fail-closed endpoint guard: the real robot is unreachable unless explicitly allowed</li>
           <li>Robot-side loop exits after ~0.5 s of failed sends instead of replaying a stale target</li>
         </ul>
       </div>
@@ -381,7 +378,7 @@
       </div>
       <figure class="shot">
         <img src="assets/console_manual_sim.jpg" alt="Operator console in MANUAL mode against the simulator: three camera tiles, a 3D view of the robot at the fridge, a red HOLD bar and skill control buttons">
-        <figcaption>Operator console in MANUAL mode, driving the simulator with recorded camera input during development.</figcaption>
+        <figcaption>Operator console in MANUAL mode (simulator).</figcaption>
       </figure>
     </div>
   </section>
@@ -389,11 +386,11 @@
   <section id="switching">
     <h2><span class="no">04</span>Switching between models</h2>
     <p>The fridge task alone uses two model families — one for the door, another for the can — and in the cocktail a glass picked up by
-    one model is poured by another. Switching has to be boring.</p>
+    one model is poured by another.</p>
     <div class="grid3">
       <div class="card"><div class="tag">Always loaded</div><p>All VLA servers stay warm on one GPU; each runs behind its own worker process and proxy, so swapping models never means reloading weights or touching the robot driver.</p></div>
       <div class="card"><div class="tag">One lease, new epoch</div><p>Exactly one worker holds the motion lease. Every swap bumps the control epoch, so any late action from the previous model is dropped at the gateway.</p></div>
-      <div class="card"><div class="tag">Controller &amp; grip</div><p>Door skills run in impedance control, pick and pour in position control; the switch takes about 145 ms. A glass held in the right hand stays gripped while the next model takes over.</p></div>
+      <div class="card"><div class="tag">Controller &amp; grip</div><p>Door skills run in impedance control, pick and pour in position control; the switch takes about 145 ms. A held glass stays gripped while the next model takes over.</p></div>
     </div>
   </section>
 
@@ -471,7 +468,6 @@
         <line x1="779" y1="294" x2="844" y2="322" stroke="#b42318" stroke-width="1.4" marker-end="url(#sr)"/>
         <text x="425" y="316" text-anchor="middle" class="e">order set per recipe (check before or after align)</text>
         <text x="661" y="316" text-anchor="middle" class="e">soft stop on “done”</text>
-        <text x="20" y="330" class="e">Oct 21 AUTO session: 77 subtask commands · 65 done · 11 aborted · 1 fault</text>
       </svg>
     </div>
   </section>
@@ -482,15 +478,13 @@
     <span class="k pol">policy</span>, a recorded <span class="k tra">trajectory</span>, or a predefined <span class="k fn">function</span> — based on the robot’s current state and how the previous step ended.</p>
     <table>
       <tr><th>Situation</th><th>What plays</th></tr>
-      <tr><td>The step needs perception and adaptation</td><td><span class="k pol">policy</span> VLA server for that skill, chunked or streaming</td></tr>
-      <tr><td>A segment is better served by a known-good demonstration</td><td><span class="k tra">trajectory</span> recorded data replayed under the control mode it was recorded in (position or impedance), at 0.25–1×, checked by the gateway before it starts</td></tr>
+      <tr><td>The step needs perception and adaptation</td><td><span class="k pol">policy</span> VLA server for that skill</td></tr>
+      <tr><td>A segment is better served by a known-good demonstration</td><td><span class="k tra">trajectory</span> recorded data replayed under the control mode it was recorded in (position or impedance), checked by the gateway before it starts</td></tr>
       <tr><td>The robot is not at the skill’s start pose</td><td><span class="k fn">function</span> ramp to the start pose — through an intermediate waypoint when the gap is large</td></tr>
-      <tr><td>Already within 1° of the replay start</td><td><span class="k fn">function</span> skip the alignment ramp and play immediately</td></tr>
       <tr><td>The previous step ended abnormally</td><td><span class="k fn">function</span> HOME is inserted before the next step</td></tr>
       <tr><td>The episode is over (AUTO)</td><td><span class="k fn">function</span> automatic HOME</td></tr>
       <tr><td>Replay starts too far from where the robot is, or drifts while playing</td><td>refused above an 8° start gap · aborted above a 20° tracking error</td></tr>
     </table>
-    <p class="note">The shaking task can be played as one model, as per-segment models (pick · shake · place), or as per-segment recorded trajectories — the same catalog entry point for all of them.</p>
   </section>
 
   <section id="demo">
@@ -499,12 +493,12 @@
       <figure class="clip" style="position:relative">
         <video src="assets/fridge_semiauto_4x.mp4" poster="assets/fridge_semiauto_4x.jpg" controls muted loop playsinline preload="metadata"></video>
         <span class="badge">SEMIAUTO · 4×</span>
-        <figcaption><b>Fridge, three subtasks.</b> Open the door, take out the can, close the door — each subtask approved on the console, switching from impedance control for the door to position control for the can and back.</figcaption>
+        <figcaption><b>Fridge, three subtasks.</b> Open the door, take out the can, close the door, each subtask approved on the console.</figcaption>
       </figure>
       <figure class="clip" style="position:relative">
         <video src="assets/cocktail_semiauto_8x.mp4" poster="assets/cocktail_semiauto_8x.jpg" controls muted loop playsinline preload="metadata"></video>
         <span class="badge">SEMIAUTO · 8×</span>
-        <figcaption><b>Cocktail, four subtasks.</b> Pick up a glass, pour, pour again, place — two model families behind the same gateway, with the glass held through the hand-off.</figcaption>
+        <figcaption><b>Cocktail, four subtasks.</b> Pick up a glass, pour, pour again, place — two model families behind the same gateway.</figcaption>
       </figure>
     </div>
 
@@ -522,36 +516,28 @@
       <tr><th>Date</th><th>Mode</th><th>Task</th><th>Episodes</th><th>All subtasks done</th></tr>
       <tr><td>Oct 16</td><td>SEMIAUTO</td><td>Fridge: open → take can → close (3)</td><td class="num">27</td><td class="num">13</td></tr>
       <tr><td>Oct 20</td><td>SEMIAUTO</td><td>Cocktail: pick glass → pour → pour → place (4)</td><td class="num">19</td><td class="num">12</td></tr>
-      <tr><td>Oct 21</td><td>AUTO</td><td>Fridge + cocktail from one sentence (7)</td><td class="num">18</td><td class="num">6 · 7.7–8.6 min each</td></tr>
+      <tr><td>Oct 21</td><td>AUTO</td><td>Fridge + cocktail from one sentence (7)</td><td class="num">18</td><td class="num">6</td></tr>
     </table>
-    <p class="note">Counts come from the runtime’s execution ledger; an episode counts when every subtask reported done. Episodes include runs the operator
-    stopped on purpose while tuning, and runs handed back to MANUAL. On Oct 21 the fridge step failed the first five AUTO attempts; matching the AUTO
-    recipe to the start-up sequence used in MANUAL (via-waypoint, align, then check) fixed it, and complete runs followed.</p>
+    <p class="note">Counted from the execution ledger. Episodes include tuning runs that the operator stopped on purpose.</p>
   </section>
 
   <section>
     <h2>Engineering notes</h2>
-    <div class="grid2">
+    <div class="grid3">
       <div class="card">
         <div class="tag">Reject, don’t clip</div>
         <p>Clipping an out-of-range command hides a bug and still moves the robot somewhere nobody asked for. The gateway refuses the command,
         counts the violation and escalates to FAULT.</p>
       </div>
       <div class="card">
-        <div class="tag">Stale targets</div>
-        <p>The very first real-robot run ended in an operator E-stop and exposed a stale-target hazard when commands stop arriving.
-        The robot-side loop now exits after 30 consecutive send failures instead of replaying an old target.</p>
-      </div>
-      <div class="card">
         <div class="tag">Hours-long sessions</div>
-        <p>After about two hours the robot-side loop held its whole recording in memory, starved the interpreter lock, and opened multi-second
-        gaps that tripped the body-link watchdog. Traced from the logs; fixed with an idle-time refresh and a watchdog.</p>
+        <p>In multi-hour sessions the robot-side loop held its whole recording in memory and stalled long enough to trip the body-link
+        watchdog. Traced from the logs and fixed with an idle-time refresh.</p>
       </div>
       <div class="card">
         <div class="tag">Bit-identical integration</div>
         <p>Routing a policy through the gateway must not change what it does. On the same recorded inputs, commands through the new path
-        matched the original stand-alone clients exactly — zero difference for body, hands and neck. 754 automated tests and
-        Docker-simulator runs gate every change before it reaches the robot.</p>
+        matched the original stand-alone clients exactly — zero difference for body, hands and neck.</p>
       </div>
     </div>
   </section>
