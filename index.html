@@ -251,6 +251,16 @@ header .contact-line a:hover{color:var(--link);border-bottom-color:var(--link)}
 .exp-awards li strong{font-weight:600;color:var(--text)}
 .exp-awards li.etc{color:var(--text-faint);font-size:0.82rem;font-style:italic}
 .exp-awards li.etc::before{content:''}
+.exp-item.has-media{
+  display:grid;grid-template-columns:148px minmax(0,1fr);gap:18px;align-items:start;
+}
+.exp-media{min-width:0;padding-top:4px}
+.exp-media a{display:block;border-bottom:none}
+.exp-media img{
+  display:block;width:100%;height:auto;
+  background:#f5f5f2;border:1px solid var(--rule-light);
+}
+.exp-details{min-width:0}
 
 /* ===== FOOTER ===== */
 footer{
@@ -292,10 +302,12 @@ footer{
   .pub-media{width:100%;max-width:280px;padding-top:0}
   .fund-item{grid-template-columns:1fr;gap:12px}
   .fund-media{width:100%;max-width:280px;padding-top:0}
+  .exp-item.has-media{grid-template-columns:1fr;gap:12px}
+  .exp-media{width:100%;max-width:280px;padding-top:0}
 }
 @media print{
-  .pub-item,.fund-item{grid-template-columns:1fr;break-inside:avoid}
-  .pub-media,.fund-media{display:none}
+  .pub-item,.fund-item,.exp-item.has-media{grid-template-columns:1fr;break-inside:avoid}
+  .pub-media,.fund-media,.exp-media{display:none}
 }
 
 /* print-friendly */
@@ -668,34 +680,49 @@ footer{
     <div class="exp-org">Interactive Robotics Lab, Dongguk University</div>
     <div class="exp-desc">Bimanual robot learning and control; developing Mixture-of-Experts VLA architecture. Building teleoperation systems for dual UR5e arms with VR-based control interfaces.</div>
   </div>
-  <div class="exp-item">
-    <div class="exp-head">
-      <span class="exp-role">Team Leader — SOOMAC (Robot Arm Team)</span>
-      <span class="edu-date">2023 – 2024</span>
+  <!-- Team photos: SOOMAC competition folder and MAC club documents on Google Drive -->
+  <div class="exp-item has-media">
+    <div class="exp-media">
+      <a href="assets/experience/soomac-collage.jpg" target="_blank" rel="noopener">
+        <img src="assets/experience/soomac-collage.jpg" width="960" height="720" loading="lazy" alt="SOOMAC photo collage: the team's robot arm, the team on stage at the 2024 Creative Engineering Design Competition award ceremony, the arm and its control GUI at the exhibition booth, and an early prototype of the arm being assembled">
+      </a>
     </div>
-    <div class="exp-org">Dongguk University</div>
-    <div class="exp-desc">Led computer vision development for robotic arm manipulation tasks; coordinated team of engineers for competitive robot arm challenges.</div>
-    <div class="exp-awards">
-      <ul>
-        <li><strong>Minister of Trade, Industry and Energy Award</strong>, Creative Engineering Design Competition, 2024</li>
-        <li><strong>Best Award</strong>, IoT Home Appliance Consortium Engineering Design, 2024</li>
-        <li class="etc">and 4 more</li>
-      </ul>
+    <div class="exp-details">
+      <div class="exp-head">
+        <span class="exp-role">Team Leader — SOOMAC (Robot Arm Team)</span>
+        <span class="edu-date">2023 – 2024</span>
+      </div>
+      <div class="exp-org">Dongguk University</div>
+      <div class="exp-desc">Led computer vision development for robotic arm manipulation tasks; coordinated team of engineers for competitive robot arm challenges.</div>
+      <div class="exp-awards">
+        <ul>
+          <li><strong>Minister of Trade, Industry and Energy Award</strong>, Creative Engineering Design Competition, 2024</li>
+          <li><strong>Best Award</strong>, IoT Home Appliance Consortium Engineering Design, 2024</li>
+          <li class="etc">and 4 more</li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div class="exp-item">
-    <div class="exp-head">
-      <span class="exp-role">Member — MACARON (Autonomous Driving Team)</span>
-      <span class="edu-date">2022 – 2024</span>
+  <div class="exp-item has-media">
+    <div class="exp-media">
+      <a href="assets/experience/macaron.jpg" target="_blank" rel="noopener">
+        <img src="assets/experience/macaron.jpg" width="560" height="420" loading="lazy" alt="MACARON team members working on the 1/5-scale autonomous car for the International Student EV Autonomous Driving Competition, 2023">
+      </a>
     </div>
-    <div class="exp-org">Dongguk University</div>
-    <div class="exp-desc">Path planning and tracking algorithms for autonomous vehicle systems; participated in multiple national autonomous driving competitions.</div>
-    <div class="exp-awards">
-      <ul>
-        <li><strong>Grand Prize</strong>, Future Mobility Urban Challenge, 2022</li>
-        <li><strong>Innovation Award</strong>, SNU Autonomous Driving SW Challenge, 2023</li>
-        <li class="etc">and 2 more</li>
-      </ul>
+    <div class="exp-details">
+      <div class="exp-head">
+        <span class="exp-role">Member — MACARON (Autonomous Driving Team)</span>
+        <span class="edu-date">2022 – 2024</span>
+      </div>
+      <div class="exp-org">Dongguk University</div>
+      <div class="exp-desc">Path planning and tracking algorithms for autonomous vehicle systems; participated in multiple national autonomous driving competitions.</div>
+      <div class="exp-awards">
+        <ul>
+          <li><strong>Grand Prize</strong>, Future Mobility Urban Challenge, 2022</li>
+          <li><strong>Innovation Award</strong>, SNU Autonomous Driving SW Challenge, 2023</li>
+          <li class="etc">and 2 more</li>
+        </ul>
+      </div>
     </div>
   </div>
   </div>
