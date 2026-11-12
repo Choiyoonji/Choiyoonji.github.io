@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Autonomous Hamburger Assembly Robot — Yoon-Ji Choi</title>
+<meta name="description" content="A robot arm that builds a burger from a line of ingredient pans, choosing a grasp and a magnet-coupled tool for each ingredient. 3rd place, Zeus Robot Mission Challenge, R-BIZ Challenge 2024.">
+<meta property="og:title" content="Autonomous Hamburger Assembly Robot">
+<meta property="og:description" content="A robot arm that builds a burger, choosing a grasp and a tool for each ingredient. 3rd place, R-BIZ Challenge 2024.">
+<meta property="og:image" content="https://choiyoonji.github.io/hamburger-robot/img/burger-box.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 1080px column on a brushed-steel ground; figure rows split into 2–3 columns and stack under 760px */
+:root {
+  --bg: #eef1f3;
+  --surface: #ffffff;
+  --steel: #e1e6e9;
+  --ink: #14181b;
+  --muted: #55606a;
+  --line: #cfd6db;
+  --accent: #c8731a;      /* toasted bun */
+  --accent-ink: #8c4b0b;
+  --accent-soft: #f7e7d3;
+  --pick: #23883d;        /* matches the green "selected" box in the vision overlays */
+  --pick-soft: #dcf0e1;
+  --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1214; --surface: #171b1e; --steel: #20262a; --ink: #e6eaed; --muted: #9ba6ae; --line: #2c3338;
+    --accent: #e3943c; --accent-ink: #f2b46b; --accent-soft: #3a2a18; --pick: #4fc06c; --pick-soft: #16331f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1214; --surface: #171b1e; --steel: #20262a; --ink: #e6eaed; --muted: #9ba6ae; --line: #2c3338;
+  --accent: #e3943c; --accent-ink: #f2b46b; --accent-soft: #3a2a18; --pick: #4fc06c; --pick-soft: #16331f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--accent-ink); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 3px; border-radius: 6px; }
+img, video { max-width: 100%; height: auto; display: block; }
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 {
+  font-stretch: 115%;
+  font-weight: 800;
+  font-size: clamp(2.25rem, 5.4vw, 3.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.012em;
+}
+h2 { font-stretch: 108%; font-weight: 750; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; }
+h3 { font-stretch: 100%; font-weight: 700; font-size: 1.15rem; line-height: 1.3; }
+p { margin: 0; }
+.prose { max-width: 66ch; display: grid; gap: 14px; }
+.muted { color: var(--muted); }
+
+/* Hero */
+.hero { padding-block: 56px 40px; display: grid; gap: 28px; }
+.hero-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: end; }
+.hero-meta { display: grid; gap: 16px; min-width: 0; }
+.wide-fig img, .wide-fig video { aspect-ratio: 16 / 9; object-fit: cover; }
+.split.flush { margin-top: 0; }
+.hero-text { display: grid; gap: 20px; min-width: 0; }
+.lede { font-size: 1.125rem; line-height: 1.55; max-width: 34em; }
+.byline { color: var(--muted); font-size: 0.95rem; }
+.byline strong { color: var(--ink); font-weight: 600; }
+.award { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+.medal {
+  flex: none;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: #17110a;
+  font-family: var(--f-display); font-weight: 800; font-stretch: 112%; font-size: 0.95rem;
+}
+.links { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  text-decoration: none; font-weight: 500; font-size: 0.95rem;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #17110a; font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.05); }
+.hero-fig { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.hero-fig img, .hero-fig video { border-radius: var(--radius); border: 1px solid var(--line); aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
+.chapters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.chapters .k { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.chapters button {
+  font: inherit; font-size: 0.85rem; color: var(--ink); cursor: pointer;
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+}
+.chapters button span { font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chapters button:hover { border-color: var(--accent); }
+.chapters button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+/* Spec strip */
+.spec {
+  margin: 0; padding-block: 24px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 32px;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.spec div { display: grid; gap: 4px; min-width: 0; }
+.spec dt { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.spec dd { margin: 0; font-size: 0.95rem; line-height: 1.45; }
+
+/* Sections */
+main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+section { padding-block: 56px; border-bottom: 1px solid var(--line); min-width: 0; }
+section:last-of-type { border-bottom: 0; }
+.sec-head { display: grid; gap: 8px; margin-bottom: 24px; }
+.sub-head { display: grid; gap: 6px; margin: 36px 0 18px; }
+
+/* Strategy cards */
+.strategies { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.strat {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; display: grid; gap: 12px; align-content: start;
+}
+.strat-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tag { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.8rem; padding: 2px 10px; border-radius: 999px; background: var(--steel); }
+.strat p { font-size: 0.95rem; }
+.strat .input { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+
+/* Diagram */
+.diagram { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 16px; }
+.diagram svg { display: block; min-width: 720px; width: 100%; height: auto; }
+.d-node { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.d-in { fill: var(--steel); stroke: var(--line); stroke-width: 1.5; }
+.d-main { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.d-t { fill: var(--ink); font-family: var(--f-body); font-weight: 600; font-size: 15px; }
+.d-s { fill: var(--muted); font-family: var(--f-mono); font-size: 12px; }
+.d-edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.d-arrow { fill: var(--muted); }
+.d-label { fill: var(--accent-ink); font-family: var(--f-mono); font-size: 12px; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; margin-top: 28px; }
+
+/* Figures */
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figure img, figure video { width: 100%; border-radius: 8px; border: 1px solid var(--line); background: var(--steel); }
+figcaption { font-size: 0.875rem; line-height: 1.5; color: var(--muted); }
+figcaption b { color: var(--ink); font-weight: 600; }
+.row-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.crop-43 img { aspect-ratio: 4 / 3; object-fit: cover; }
+.grip-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; margin-top: 20px; align-items: start; }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-size: 0.95rem; line-height: 1.5; }
+.steps li::before {
+  content: counter(s);
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 1.5px solid var(--accent); color: var(--accent-ink);
+  font-family: var(--f-mono); font-size: 0.8rem; font-weight: 500;
+}
+.mono { font-family: var(--f-mono); font-size: 0.85em; }
+
+/* Zone readout */
+.zone-wrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.zone-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--steel); justify-self: start; }
+.tabs button {
+  font: inherit; font-size: 0.9rem; font-weight: 500; color: var(--muted);
+  border: 0; background: transparent; padding: 6px 16px; border-radius: 999px; cursor: pointer;
+}
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.pan {
+  border: 2px solid var(--line); border-radius: 14px; padding: 8px;
+  background: linear-gradient(180deg, var(--steel), var(--surface));
+  display: grid; gap: 6px;
+}
+.zone, .axis {
+  display: grid; grid-template-columns: 6.6rem minmax(0, 1fr) 3.6rem; gap: 12px; align-items: center;
+}
+.zone .z { white-space: nowrap; }
+.zone { padding: 10px 10px; border-radius: 8px; border: 1px solid transparent; }
+.zone .z { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); }
+.zone .v { font-family: var(--f-mono); font-size: 0.9rem; text-align: right; font-variant-numeric: tabular-nums; }
+.track {
+  position: relative; height: 18px;
+  background:
+    linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--line), var(--line)) 0 0 / 1px 100% no-repeat,
+    linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(var(--line), var(--line)) 100% 0 / 1px 100% no-repeat;
+}
+.dot {
+  position: absolute; top: 50%; left: var(--x);
+  width: 14px; height: 14px; border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--muted); border: 2px solid var(--surface);
+  transition: left .35s ease;
+}
+.zone.is-pick { background: var(--pick-soft); border-color: var(--pick); }
+.zone.is-pick .z { color: var(--pick); font-weight: 500; }
+.zone.is-pick .dot { background: var(--pick); width: 16px; height: 16px; }
+.axis { padding: 0 10px; }
+.axis .scale { position: relative; height: 1.2em; font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); }
+.axis .scale span { position: absolute; top: 0; }
+.axis .scale span:nth-child(1) { left: 0; }
+.axis .scale span:nth-child(2) { left: 50%; transform: translateX(-50%); }
+.axis .scale span:nth-child(3) { right: 0; }
+.axis .lbl { font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); }
+.zone-note { font-size: 0.875rem; color: var(--muted); }
+
+/* Recognition */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 12px; align-content: start; }
+.panel.award-panel { border-color: var(--accent); }
+
+footer { padding-block: 32px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.875rem; display: grid; gap: 6px; }
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .spec { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grip-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grip-row .steps-col { grid-column: 1 / -1; }
+  .zone-wrap { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .strategies, .split, .row-2 { grid-template-columns: 1fr; }
+  .row-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .hero { padding-block: 36px 28px; }
+  section { padding-block: 40px; }
+  .spec { grid-template-columns: 1fr; }
+  .grip-row { grid-template-columns: 1fr; }
+  .zone, .axis { grid-template-columns: 5.9rem minmax(0, 1fr) 3.1rem; gap: 8px; }
+  .zone .z { font-size: 0.72rem; }
+  .zone-card { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot { transition: none; }
+}
+</style>
+
+</head>
+<body>
+
+<header class="hero wrap">
+  <p class="eyebrow">R-BIZ Challenge 2024 · Zeus Robot Mission Challenge · Free mission</p>
+  <div class="hero-grid">
+    <div class="hero-text">
+      <h1>Autonomous Hamburger Assembly Robot</h1>
+      <p class="lede">One robot arm builds a burger, layer by layer, from a line of ingredient pans. It looks into each stainless pan before every pick, chooses a grasp that suits the ingredient, and switches between cooking tools that lock onto its gripper with magnets.</p>
+    </div>
+    <div class="hero-meta">
+      <p class="byline"><strong><a href="https://choiyoonji.github.io/">Yoon-Ji Choi</a></strong> (team lead, vision) and Team SOOMAC<br>M.A.C robotics group · Dongguk University, Seoul</p>
+      <p class="award"><span class="medal" aria-hidden="true">3rd</span><span>3rd place · Director General Award, Korean Agency for Technology and Standards</span></p>
+      <nav class="links" aria-label="Videos">
+        <a class="btn primary" href="https://youtu.be/ig1mzIY8Bis" target="_blank" rel="noopener">Watch the full demo ↗</a>
+        <a class="btn" href="https://youtube.com/shorts/CWN2zNaPcoE" target="_blank" rel="noopener">Short version ↗</a>
+      </nav>
+    </div>
+  </div>
+  <figure class="hero-fig">
+    <video id="demo" src="media/demo.mp4" poster="img/burger-box.jpg" controls playsinline preload="metadata" width="1280" height="720" aria-label="Demo reel: the robot arm flips a water bottle, then builds a burger from bun, tomato, pickle, lettuce and onion"></video>
+    <div class="chapters" role="group" aria-label="Jump to a step in the demo reel">
+      <span class="k">Jump to</span>
+      <button type="button" data-t="0">Bottle flip <span>0:00</span></button>
+      <button type="button" data-t="23">Bun <span>0:23</span></button>
+      <button type="button" data-t="58">Tomato <span>0:58</span></button>
+      <button type="button" data-t="85.5">Pickle <span>1:25</span></button>
+      <button type="button" data-t="117.5">Lettuce <span>1:57</span></button>
+      <button type="button" data-t="160">Onion <span>2:40</span></button>
+    </div>
+    <figcaption><b>Demo reel.</b> The bottle-flip mission first, then a burger built one ingredient at a time.</figcaption>
+  </figure>
+
+  <dl class="spec">
+    <div><dt>Arm</dt><dd>Zeus robot arm provided by the competition</dd></div>
+    <div><dt>Camera</dt><dd>Wrist-mounted RGB-D</dd></div>
+    <div><dt>Perception</dt><dd>YOLOv8 detection with depth</dd></div>
+    <div><dt>Software</dt><dd>ROS</dd></div>
+    <div><dt>End effector</dt><dd>Stock gripper driving magnet-coupled cooking tools</dd></div>
+    <div><dt>Inventory</dt><dd>Load cells under each pan</dd></div>
+  </dl>
+</header>
+
+<main class="wrap">
+
+  <section id="approach" aria-labelledby="h-approach">
+    <div class="sec-head">
+      <p class="eyebrow">Approach</p>
+      <h2 id="h-approach">Three ways to pick an ingredient</h2>
+    </div>
+    <div class="split flush">
+      <div class="prose">
+        <p>A burger is a short run of very different grasps. Instead of one general grasp, the platform gives each kind of ingredient its own strategy and its own tool.</p>
+      </div>
+      <figure>
+        <img src="img/pans.jpg" alt="Three stainless steel pans on the workspace holding burger buns, shredded lettuce and sliced tomatoes" width="892" height="669" loading="lazy">
+        <figcaption><b>The ingredient line.</b> Buns, shredded lettuce and sliced tomato, each in its own stainless pan.</figcaption>
+      </figure>
+    </div>
+
+    <div class="strategies">
+      <article class="strat">
+        <div class="strat-top"><span class="tag">Fixed slot</span><span class="chips"><span class="chip">Bun</span></span></div>
+        <h3>Count, then go to the next full slot</h3>
+        <p>Buns sit in known slots, so there is nothing to search for. The main node counts the orders served and sends the arm to the next slot that still holds a bun.</p>
+        <p class="input">Input: order count</p>
+      </article>
+      <article class="strat">
+        <div class="strat-top"><span class="tag">Zone depth</span><span class="chips"><span class="chip">Lettuce</span><span class="chip">Onion</span></span></div>
+        <h3>Scoop from the tallest pile</h3>
+        <p>Shredded ingredients have no single object to detect. The pan is split into four zones and the arm scoops from the zone with the lowest mean depth, which is the highest pile. The scoop height also follows that depth, so each portion comes out about the same size.</p>
+        <p class="input">Input: depth image</p>
+      </article>
+      <article class="strat">
+        <div class="strat-top"><span class="tag">Per-item detection</span><span class="chips"><span class="chip">Tomato</span><span class="chip">Pickle</span><span class="chip">Patty</span></span></div>
+        <h3>Take the top slice with room to grip</h3>
+        <p>YOLOv8 finds every piece and depth picks the one on top. The grip point is chosen for clearance, so a slice can be taken from anywhere in the pan.</p>
+        <p class="input">Input: RGB + depth</p>
+      </article>
+      <article class="strat">
+        <div class="strat-top"><span class="tag">Dispense</span><span class="chips"><span class="chip">Sauce</span></span></div>
+        <h3>Press, don't pick</h3>
+        <p>A pressure-type dispenser mounted on the sauce bottle applies the sauce.</p>
+        <p class="input">Input: none</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="system" aria-labelledby="h-system">
+    <div class="sec-head">
+      <p class="eyebrow">System</p>
+      <h2 id="h-system">Every sensor reports to one main node</h2>
+    </div>
+
+    <div class="diagram" role="img" aria-label="System diagram. The order GUI, the vision node with its RGB-D camera and YOLOv8, and the workspace node with load cells all send data to the ROS main node. The main node passes motion to the control node, which commands the Zeus arm over a socket.">
+      <svg viewBox="0 0 900 264" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path class="d-arrow" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+        </defs>
+        <rect class="d-in" x="8" y="8" width="212" height="64" rx="8"/>
+        <text class="d-t" x="24" y="35">GUI / order kiosk</text>
+        <text class="d-s" x="24" y="56">orders in</text>
+
+        <rect class="d-in" x="8" y="100" width="212" height="64" rx="8"/>
+        <text class="d-t" x="24" y="127">Vision node</text>
+        <text class="d-s" x="24" y="148">RGB-D · YOLOv8</text>
+
+        <rect class="d-in" x="8" y="192" width="212" height="64" rx="8"/>
+        <text class="d-t" x="24" y="219">Workspace node</text>
+        <text class="d-s" x="24" y="240">load cells</text>
+
+        <rect class="d-main" x="300" y="76" width="196" height="112" rx="10"/>
+        <text class="d-t" x="316" y="104">Main node</text>
+        <text class="d-s" x="316" y="128">ROS</text>
+        <text class="d-s" x="316" y="150">chooses ingredient,</text>
+        <text class="d-s" x="316" y="168">grasp and tool</text>
+
+        <rect class="d-node" x="556" y="100" width="150" height="64" rx="8"/>
+        <text class="d-t" x="572" y="127">Control node</text>
+        <text class="d-s" x="572" y="148">motion steps</text>
+
+        <rect class="d-node" x="772" y="100" width="120" height="64" rx="8"/>
+        <text class="d-t" x="788" y="127">Zeus arm</text>
+        <text class="d-s" x="788" y="148">i611_MCS</text>
+
+        <path class="d-edge" d="M220,40 H258 V112 H298" marker-end="url(#arr)"/>
+        <path class="d-edge" d="M220,132 H298" marker-end="url(#arr)"/>
+        <path class="d-edge" d="M220,224 H258 V152 H298" marker-end="url(#arr)"/>
+        <path class="d-edge" d="M496,132 H554" marker-end="url(#arr)"/>
+        <path class="d-edge" d="M706,132 H770" marker-end="url(#arr)"/>
+        <text class="d-label" x="738" y="122" text-anchor="middle">socket</text>
+      </svg>
+    </div>
+
+    <div class="split">
+      <div class="prose">
+        <p>The main node tracks what has been served, decides which ingredient goes next, and chooses the grasp and tool for it. A separate control node turns that decision into arm motion.</p>
+      </div>
+      <figure>
+        <video src="media/wrist-cam.mp4" poster="media/wrist-cam.jpg" muted loop playsinline autoplay controls width="640" height="480" aria-label="Wrist camera footage looking down into the lettuce pan"></video>
+        <figcaption><b>Eye-in-hand view.</b> Raw color stream from the wrist camera above the lettuce pan.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="perception" aria-labelledby="h-perception">
+    <div class="sec-head">
+      <p class="eyebrow">Perception</p>
+      <h2 id="h-perception">Reading the pan before every pick</h2>
+    </div>
+
+    <div class="sub-head">
+      <h3>Per-item detection: tomato, pickle, patty</h3>
+    </div>
+    <div class="row-2">
+      <figure>
+        <img src="img/yolo-tomato.jpg" alt="Tomato slices with YOLOv8 bounding boxes" width="622" height="474" loading="lazy">
+        <figcaption><b>Tomato detection</b> with YOLOv8.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/yolo-pickle.jpg" alt="Pickle slices with YOLOv8 bounding boxes" width="616" height="474" loading="lazy">
+        <figcaption><b>Pickle detection.</b> Thin, overlapping slices are found one by one.</figcaption>
+      </figure>
+    </div>
+    <div class="grip-row">
+      <figure>
+        <img src="img/grip-tomato.jpg" alt="Wrist camera view of a tomato pan with the selected slice, its grip point and a depth map below" width="522" height="592" loading="lazy">
+        <figcaption><b>Tomato grip point</b> with the depth map below.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/grip-pickle.jpg" alt="Wrist camera view of a pickle pan with the selected slice, its grip point and a depth map below" width="522" height="591" loading="lazy">
+        <figcaption><b>Pickle grip point</b> with the depth map below.</figcaption>
+      </figure>
+      <div class="steps-col">
+        <ol class="steps">
+          <li><span>Detect every piece in the color frame with YOLOv8.</span></li>
+          <li><span>Read depth at the center of each box and keep the piece closest to the camera, which is the one on top.</span></li>
+          <li><span>Score four candidate grip points around it by their distance from the pan wall and from neighboring pieces.</span></li>
+          <li><span>Convert the best point from pixels to world coordinates <span class="mono">(X, Y, Z, yaw)</span> and publish it to the main node.</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="sub-head">
+      <h3>Zone depth: lettuce and onion</h3>
+      <p class="muted">Values below are the mean depths the vision node logged for each zone. Switch pans to compare.</p>
+    </div>
+    <div class="zone-wrap">
+      <div class="zone-card">
+        <div class="tabs" role="tablist" aria-label="Ingredient pan">
+          <button type="button" role="tab" id="tab-lettuce" aria-selected="true" aria-controls="pan" data-pan="lettuce">Lettuce</button>
+          <button type="button" role="tab" id="tab-onion" aria-selected="false" aria-controls="pan" data-pan="onion">Onion</button>
+        </div>
+        <div class="pan" id="pan" role="tabpanel" aria-labelledby="tab-lettuce">
+          <div class="zone is-pick"><span class="z">Zone 1 · pick</span><span class="track"><span class="dot" style="--x:33.6%"></span></span><span class="v">266.8</span></div>
+          <div class="zone"><span class="z">Zone 2</span><span class="track"><span class="dot" style="--x:51.1%"></span></span><span class="v">275.6</span></div>
+          <div class="zone"><span class="z">Zone 3</span><span class="track"><span class="dot" style="--x:89.0%"></span></span><span class="v">294.5</span></div>
+          <div class="zone"><span class="z">Zone 4</span><span class="track"><span class="dot" style="--x:96.4%"></span></span><span class="v">298.2</span></div>
+        </div>
+        <div class="axis" aria-hidden="true"><span class="lbl">mean depth</span><span class="scale"><span>250</span><span>275</span><span>300</span></span><span></span></div>
+        <p class="zone-note">A lower value means the surface is closer to the camera, so that zone holds the most ingredient and is scooped first.</p>
+      </div>
+      <figure>
+        <img id="zone-img" src="img/zones-lettuce.jpg" alt="Lettuce pan split into four zones with mean depth values; zone 1 is boxed in green. Depth map below." width="542" height="614" loading="lazy">
+        <figcaption id="zone-cap"><b>Vision overlay, lettuce pan.</b> The green box marks the selected zone. Depth map below.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="hardware" aria-labelledby="h-hardware">
+    <div class="sec-head">
+      <p class="eyebrow">Hardware</p>
+      <h2 id="h-hardware">One gripper, many tools</h2>
+    </div>
+    <div class="prose">
+      <p>The competition arm came with a single stock gripper. Rather than add actuators, we made the gripper drive the tools. Each cooking tool shares one coupling standard, neodymium magnets keep it seated, and the gripper's open-close stroke works the tool. A stand holds the tools between picks.</p>
+    </div>
+    <figure class="wide-fig" style="margin-top:28px">
+      <img src="img/tongs-live.jpg" alt="Robot arm scooping shredded lettuce with white tongs from a stainless pan, next to pans of sliced tomato and onion" width="1270" height="714" loading="lazy">
+      <figcaption><b>Competition day.</b> The tongs scoop lettuce from its pan.</figcaption>
+    </figure>
+    <div class="row-3 crop-43" style="margin-top:20px">
+      <figure>
+        <img src="img/coupling.jpg" alt="Black 3D-printed coupling block and a pair of tool arms that attach to the gripper" width="892" height="669" loading="lazy">
+        <figcaption><b>Tool coupling.</b> One interface shared by every tool.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/tongs.jpg" alt="Robot gripper holding white 3D-printed tongs for lettuce" width="892" height="669" loading="lazy">
+        <figcaption><b>Lettuce tongs</b> mounted on the gripper.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/loadcell.jpg" alt="Load cell mounted in a black 3D-printed pan frame, wired to a microcontroller" width="669" height="892" loading="lazy" style="object-position:center 70%">
+        <figcaption><b>Load cell.</b> Mounted in the pan frame to report how much of each ingredient is left.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="recognition" aria-labelledby="h-recognition">
+    <div class="sec-head">
+      <p class="eyebrow">Recognition &amp; media</p>
+      <h2 id="h-recognition">R-BIZ Challenge 2024</h2>
+    </div>
+    <div class="row-2" style="margin-bottom:20px">
+      <figure class="wide-fig">
+        <video src="media/ceremony.mp4" poster="media/ceremony.jpg" controls playsinline preload="none" width="1280" height="720" aria-label="Team SOOMAC is called up for third place and receives its medals at the Zeus Robot Mission Challenge award ceremony"></video>
+        <figcaption><b>Award ceremony.</b> Team SOOMAC is called up for third place and receives its medals.</figcaption>
+      </figure>
+      <figure class="wide-fig">
+        <img src="img/bottle-flip.jpg" alt="Students in hard hats watching a robot arm flip a water bottle on the RoboWorld 2024 competition floor" width="1800" height="1200" loading="lazy" style="object-position:center 62%">
+        <figcaption><b>Bottle-flip mission</b> on competition day. <a href="https://youtu.be/8Wg1K6Jfrrc?t=19" target="_blank" rel="noopener">Watch on YouTube ↗</a></figcaption>
+      </figure>
+    </div>
+    <div class="panel award-panel">
+      <p class="award"><span class="medal" aria-hidden="true">3rd</span><span>Director General Award, Korean Agency for Technology and Standards (KATS)</span></p>
+      <p>Third place in the Zeus Robot Mission Challenge at R-BIZ Challenge 2024, RoboWorld 2024, KINTEX. The hamburger platform was the team's free-mission entry.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Team SOOMAC · M.A.C, Department of Mechanical, Robotics &amp; Energy Engineering, Dongguk University · 2024</p>
+  <p>Competition-day photos, the demo reel and the ceremony video are from the team's archive. Workshop photos and vision figures are from the team's interim report for the Zeus Robot Mission Challenge.</p>
+  <p><a href="https://choiyoonji.github.io/">choiyoonji.github.io</a></p>
+</footer>
+
+<script>
+(function () {
+  var DATA = {
+    lettuce: {
+      label: "lettuce", img: "img/zones-lettuce.jpg",
+      alt: "Lettuce pan split into four zones with mean depth values; zone 1 is boxed in green. Depth map below.",
+      z: [266.81, 275.57, 294.48, 298.22]
+    },
+    onion: {
+      label: "onion", img: "img/zones-onion.jpg",
+      alt: "Onion pan split into four zones with mean depth values; zone 3 is boxed in green. Depth map below.",
+      z: [286.09, 278.73, 278.30, 287.03]
+    }
+  };
+  var MIN = 250, MAX = 300;
+  var pan = document.getElementById("pan");
+  var img = document.getElementById("zone-img");
+  var cap = document.getElementById("zone-cap");
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs [role="tab"]'));
+  if (!pan || !tabs.length) return;
+
+  function show(key) {
+    var d = DATA[key];
+    var best = d.z.indexOf(Math.min.apply(null, d.z));
+    var rows = pan.querySelectorAll(".zone");
+    d.z.forEach(function (v, i) {
+      var row = rows[i];
+      var pct = ((v - MIN) / (MAX - MIN) * 100).toFixed(1);
+      row.classList.toggle("is-pick", i === best);
+      row.querySelector(".z").textContent = "Zone " + (i + 1) + (i === best ? " · pick" : "");
+      row.querySelector(".dot").style.setProperty("--x", pct + "%");
+      row.querySelector(".v").textContent = v.toFixed(1);
+    });
+    img.src = d.img; img.alt = d.alt;
+    cap.innerHTML = "<b>Vision overlay, " + d.label + " pan.</b> The green box marks the selected zone. Depth map below.";
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-pan") === key;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      if (on) pan.setAttribute("aria-labelledby", t.id);
+    });
+  }
+
+  tabs.forEach(function (t, i) {
+    t.tabIndex = t.getAttribute("aria-selected") === "true" ? 0 : -1;
+    t.addEventListener("click", function () { show(t.getAttribute("data-pan")); });
+    t.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      var next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus(); show(next.getAttribute("data-pan"));
+    });
+  });
+
+  // Demo reel chapter buttons: seek and play, and mark the step that is on screen.
+  var demo = document.getElementById("demo");
+  var chaps = Array.prototype.slice.call(document.querySelectorAll(".chapters button"));
+  if (demo && chaps.length) {
+    chaps.forEach(function (b) {
+      b.addEventListener("click", function () {
+        try { demo.currentTime = parseFloat(b.getAttribute("data-t")); } catch (e) {}
+        var p = demo.play(); if (p && p.catch) p.catch(function () {});
+      });
+    });
+    var mark = function () {
+      var t = demo.currentTime || 0, cur = 0;
+      var started = !(demo.paused && t === 0);
+      chaps.forEach(function (b, i) { if (t >= parseFloat(b.getAttribute("data-t"))) cur = i; });
+      chaps.forEach(function (b, i) {
+        if (started && i === cur) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+      });
+    };
+    ["timeupdate", "seeked", "emptied", "play"].forEach(function (ev) { demo.addEventListener(ev, mark); });
+  }
+
+  // Respect reduced motion for the looping wrist-camera clip.
+  var vid = document.querySelector("video[autoplay]");
+  if (vid && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    vid.removeAttribute("autoplay");
+    try { vid.pause(); } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>
