@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One Command, Many Policies — Yoon-Ji Choi</title>
+<title>Turning one sentence into a seven-step robot task — Yoon-Ji Choi</title>
 <meta name="description" content="From one natural-language command to a seven-step task on a real dual-arm robot: VLA skills, VLA–VLM integration, a safety layer, model switching, state transitions and situation-aware playback.">
-<meta property="og:title" content="One Command, Many Policies">
+<meta property="og:title" content="Turning one sentence into a seven-step task on a dual-arm robot">
 <meta property="og:description" content="VLA skills, VLA–VLM integration and a safety-gated runtime that runs a seven-step task on a real RB-Y1 from one sentence.">
 <meta property="og:image" content="assets/auto_full_8x.jpg">
 <style>
@@ -31,34 +31,38 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-  header { padding: 64px 0 28px; text-align: center; }
-  .eyebrow { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
-  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.15; margin: 10px 0 12px; letter-spacing: -.01em; }
-  .subtitle { font-size: clamp(17px, 2.2vw, 20px); color: var(--muted); max-width: 780px; margin: 0 auto; }
-  .byline { margin-top: 22px; font-size: 17px; font-weight: 600; }
-  .roles { margin: 8px auto 0; display: flex; gap: 6px 8px; flex-wrap: wrap; justify-content: center; max-width: 820px; }
-  .role { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-  .meta { margin-top: 12px; color: var(--muted); font-size: 14px; }
-  .pills { margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .pill { display: inline-block; padding: 7px 16px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; }
-  .pill:hover { text-decoration: none; opacity: .88; }
-  .pill.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-
+  nav { position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  nav .nav-in { max-width: var(--maxw); margin: 0 auto; padding: 10px 24px; display: flex; gap: 4px 18px; flex-wrap: wrap; font-size: 14px; }
+  nav a { color: var(--muted); }
+  nav a:hover { color: var(--accent); text-decoration: none; }
+  header { padding: 40px 0 8px; }
+  .kicker { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  h1 { font-size: clamp(30px, 4.6vw, 46px); line-height: 1.12; letter-spacing: -.02em; margin: 0 0 18px; max-width: 860px; }
+  .byline { margin: 0 0 20px; font-size: 16px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .byline a { color: var(--ink); font-weight: 600; }
+  .lede { font-size: 18.5px; color: #3a4350; max-width: 800px; margin: 0 0 28px; }
+  .cap { font-size: 14px; color: var(--muted); margin: 10px 0 0; line-height: 1.55; max-width: 900px; }
+  header .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 30px 0 10px; }
+  header .stat { border: none; border-top: 2px solid var(--accent); border-radius: 0; padding: 12px 2px 0; text-align: left; }
+  header .stat .v { font-size: 26px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; color: var(--ink); }
+  header .stat .l { font-size: 14.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .skills { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
+  .skills li { font-size: 13.5px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: #3a4350; background: #fff; }
   figure { margin: 0; }
   .hero video, .clip video { width: 100%; display: block; border-radius: 12px; background: #000; }
-  .hero { margin: 8px auto 0; max-width: 840px; position: relative; }
+  .hero { margin: 0; position: relative; }
   .badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.62); color: #fff; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 6px; letter-spacing: .04em; }
   figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; line-height: 1.55; }
   .cmd { font-style: italic; color: var(--ink); }
 
   section { padding: 46px 0 6px; }
+  section, header { scroll-margin-top: 56px; }
   h2 { font-size: 26px; margin: 0 0 14px; letter-spacing: -.005em; }
   h2 .no { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 8px; }
   h3 { font-size: 18px; margin: 0 0 6px; }
   p { margin: 0 0 14px; }
   .lead { font-size: 18px; }
 
-  .tldr { background: var(--soft); border-left: 4px solid var(--accent); padding: 18px 22px; border-radius: 8px; }
   .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 22px; }
   .stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 10px; text-align: center; }
   .stat .n { font-size: 23px; font-weight: 700; color: var(--accent); line-height: 1.2; white-space: nowrap; }
@@ -105,66 +109,50 @@
   @media (max-width: 860px) {
     .stats { grid-template-columns: repeat(3, 1fr); }
     .grid2, .grid3 { grid-template-columns: 1fr; }
-    header { padding-top: 40px; }
+    header .stats { grid-template-columns: 1fr; }
+    nav .nav-in { gap: 2px 12px; font-size: 13px; }
   }
   @media (max-width: 520px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
 
-<header class="wrap">
-  <div class="eyebrow">Robot learning · Systems · Safety</div>
-  <h1>One Command, Many Policies</h1>
-  <p class="subtitle">From one natural-language command to a seven-step task on a real dual-arm robot — learned VLA skills, a VLM planner and monitor,
-  and a safety-gated runtime that decides what to play next.</p>
-  <div class="byline"><a href="https://choiyoonji.github.io/" style="color:inherit">Yoon-Ji Choi</a></div>
-  <div class="roles">
-    <span class="role">VLA skill training</span>
-    <span class="role">VLA–VLM system integration</span>
-    <span class="role">Safety layer design</span>
-    <span class="role">Switching between models</span>
-    <span class="role">State transitions</span>
-    <span class="role">Situation-aware playback</span>
-  </div>
-  <div class="meta">Team project with Y.-C. Son, D.-K. Ko, and J.-W. Lee · Interactive Robotics Lab, Dongguk University<br>Oct – Nov 2026 · Rainbow Robotics RB-Y1 with RH56F1 dexterous hands</div>
-  <div class="pills">
-    <a class="pill" href="#demo">Demo video</a>
-    <a class="pill ghost" href="#system">System</a>
-    <a class="pill ghost" href="#results">Real-robot results</a>
-  </div>
-</header>
+<nav><div class="nav-in">
+  <a href="#top">Overview</a><a href="#contribution">Contributions</a><a href="#system">System</a><a href="#skills">Skills</a><a href="#integration">Integration</a><a href="#safety">Safety</a><a href="#switching">Switching</a><a href="#states">States</a><a href="#playback">Playback</a><a href="#demo">Videos</a><a href="#results">Results</a>
+</div></nav>
 
 <div class="wrap">
-  <figure class="hero">
-    <video src="assets/auto_full_8x.mp4" poster="assets/auto_full_8x.jpg" autoplay muted loop playsinline preload="metadata"></video>
-    <span class="badge">AUTO · REAL ROBOT · 8×</span>
-    <figcaption>
-      <span class="cmd">“First take the Coke out of the fridge, then make a cocktail: orange first, then blue.”</span>
-      One sentence, seven subtasks — open the fridge, take out the can, close the fridge, pick up a glass, pour, pour again, place the glass —
-      handed between four VLA policy servers through one guarded control path. No per-step approval: the operator arms the run once and keeps a hand on HOLD.
-    </figcaption>
-  </figure>
+  <header id="top">
+    <p class="kicker">Robot learning · System integration · Real-robot experiments</p>
+    <h1>Turning one sentence into a seven-step task on a dual-arm robot</h1>
+    <p class="byline"><a href="https://choiyoonji.github.io/">Yoon-Ji Choi</a><span>Interactive Robotics Lab, Dongguk University</span><span>Team project with Y.-C. Son, D.-K. Ko and J.-W. Lee</span></p>
+    <p class="lede">A Rainbow Robotics RB-Y1 with two dexterous hands takes one command — “take the Coke out of the fridge, then make a
+      cocktail” — and carries it out as seven learned skills in a row. I trained the VLA skill policies, integrated them with a VLM
+      planner and progress monitor, and built the runtime in between: a safety layer that every command passes through, switching
+      between models through explicit state transitions, and playback that runs a learned skill, a recorded trajectory or a
+      predefined motion, whichever fits the moment.</p>
 
-  <section>
-    <div class="tldr">
-      <p class="lead" style="margin:0">
-        Learned skills usually live alone: one model, one deployment script, one task. To get a robot to do a long task from a single
-        sentence, the skills have to work as one system. <b>I trained VLA skills, integrated them with a VLM planner and progress monitor,
-        and built the runtime in between</b> — a safety layer every command passes through, clean switching between models, explicit
-        state transitions for every subtask, and a playback engine that picks a learned policy, a recorded trajectory, or a predefined
-        motion depending on where the robot is and how the last step ended.
-      </p>
-    </div>
+    <figure class="hero">
+      <video src="assets/auto_full_8x.mp4" poster="assets/auto_full_8x.jpg" autoplay muted loop playsinline preload="metadata"></video>
+      <span class="badge">AUTO · REAL ROBOT · 8×</span>
+    </figure>
+    <p class="cap"><span class="cmd">“First take the Coke out of the fridge, then make a cocktail: orange first, then blue.”</span>
+      Open the fridge, take out the can, close the fridge, pick up a glass, pour, pour again, place the glass — handed between four
+      VLA policy servers through one guarded control path. The operator arms the run once and keeps a hand on HOLD.</p>
 
     <div class="stats">
-      <div class="stat"><div class="n">7</div><div class="l">subtasks from one sentence, on the real robot</div></div>
-      <div class="stat"><div class="n">4</div><div class="l">VLA servers live at once, one motion lease</div></div>
-      <div class="stat"><div class="n">26</div><div class="l">skills in one catalog</div></div>
-      <div class="stat"><div class="n">~145 ms</div><div class="l">switch between position and impedance control</div></div>
-      <div class="stat"><div class="n">21–40 ms</div><div class="l">stop signal to HOLD (simulator)</div></div>
-      <div class="stat"><div class="n">754</div><div class="l">automated tests, plus simulator runs</div></div>
+      <div class="stat"><div class="v">7 subtasks</div>
+        <div class="l">from one sentence on the real robot, with no per-step approval; six complete autonomous runs in one session.</div></div>
+      <div class="stat"><div class="v">4 VLA servers</div>
+        <div class="l">loaded at once on one GPU behind a single motion lease; position ↔ impedance control switch in about 145 ms.</div></div>
+      <div class="stat"><div class="v">21–40 ms</div>
+        <div class="l">from a stop signal to the robot holding still (simulator), through the one gateway every command must pass.</div></div>
     </div>
-  </section>
+    <ul class="skills">
+      <li>VLA fine-tuning</li><li>VLA–VLM integration</li><li>Safety layer design</li><li>Multi-model switching</li>
+      <li>State machines</li><li>Trajectory replay</li><li>Real-time robot control</li><li>Simulation-first testing</li><li>Real-robot experiments</li>
+    </ul>
+  </header>
 
   <section id="contribution">
     <h2>My contributions</h2>
@@ -567,7 +555,8 @@
       <div class="card">
         <div class="tag">Bit-identical integration</div>
         <p>Routing a policy through the gateway must not change what it does. On the same recorded inputs, commands through the new path
-        matched the original stand-alone clients exactly — zero difference for body, hands and neck.</p>
+        matched the original stand-alone clients exactly — zero difference for body, hands and neck. 754 automated tests and
+        Docker-simulator runs gate every change before it reaches the robot.</p>
       </div>
     </div>
   </section>
