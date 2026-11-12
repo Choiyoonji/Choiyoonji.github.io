@@ -96,11 +96,6 @@
   .yt { position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000; }
   .yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
-  .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--line); }
-  .timeline li { position: relative; padding: 0 0 16px 22px; }
-  .timeline li::before { content: ""; position: absolute; left: -7px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
-  .timeline .d { font-weight: 600; font-size: 14px; color: var(--accent); }
-  .timeline .t { font-size: 15px; }
 
   .shot img { width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
 
@@ -561,18 +556,6 @@
     </div>
   </section>
 
-  <section>
-    <h2>Timeline</h2>
-    <ul class="timeline">
-      <li><div class="d">Oct 3</div><div class="t">Runtime, gateway, control-loop extension and console working end to end in the Docker simulator.</div></li>
-      <li><div class="d">Oct 7</div><div class="t">First real-robot runs through the gateway.</div></li>
-      <li><div class="d">Oct 11</div><div class="t">v1.0 — every skill drivable from one console.</div></li>
-      <li><div class="d">Oct 16</div><div class="t">SEMIAUTO with the VLM planner and monitor on the real robot (fridge).</div></li>
-      <li><div class="d">Oct 20</div><div class="t">SEMIAUTO cocktail: four subtasks across two model families.</div></li>
-      <li><div class="d">Oct 21</div><div class="t">AUTO: seven subtasks from one sentence, no per-step approval.</div></li>
-      <li><div class="d">Nov 10–12</div><div class="t">New pouring and shaking skills, per-segment models, and trajectory replay under the recorded control mode.</div></li>
-    </ul>
-  </section>
 </div>
 
 <footer>
