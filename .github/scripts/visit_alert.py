@@ -33,9 +33,16 @@ MAX_LINES = 10
 
 def env(name, default=None):
     value = os.environ.get(name, default)
+    value = (value or "").strip()  # pasted secrets often carry a newline
     if not value:
         sys.exit(f"error: {name} is not set (add it as a repository secret)")
     return value.rstrip("/") if name.endswith(("_SITE", "_URL")) else value
+
+
+class ApiError(Exception):
+    def __init__(self, where, status, detail):
+        super().__init__(f"{where} answered {status}: {detail}")
+        self.status = status
 
 
 def request(url, *, token=None, body=None):
@@ -45,40 +52,76 @@ def request(url, *, token=None, body=None):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, headers=headers,
                                  method="POST" if data else "GET")
+    parts = urllib.parse.urlsplit(url)
+    # Name the endpoint in errors, but never echo the webhook's secret path.
+    where = parts.netloc + (parts.path if "/api/" in parts.path else "")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             raw = resp.read()
     except urllib.error.HTTPError as e:
-        detail = e.read().decode(errors="replace")[:300]
-        host = urllib.parse.urlsplit(url).netloc
-        sys.exit(f"error: {host} answered {e.code}: {detail}")
+        raise ApiError(where, e.code, e.read().decode(errors="replace")[:300])
+    except urllib.error.URLError as e:
+        raise ApiError(where, "no response", e.reason)
     return json.loads(raw) if raw else None
 
 
-def snapshot(site, token, now):
-    end = (now.replace(minute=0, second=0, microsecond=0)
-           + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    window = {"start": START, "end": end}
+def window_for(now):
+    end = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+    return {"start": START, "end": end.strftime("%Y-%m-%dT%H:%M:%SZ")}
 
-    def get(path, **params):
-        time.sleep(0.3)  # API limit is 4 requests/second
-        query = urllib.parse.urlencode({**window, **params})
-        return request(f"{site}/api/v0/{path}?{query}", token=token)
+
+def api_get(site, token, path, **params):
+    time.sleep(0.3)  # API limit is 4 requests/second
+    query = urllib.parse.urlencode(params)
+    return request(f"{site}/api/v0/{path}?{query}", token=token)
+
+
+def snapshot(site, token, now):
+    window = window_for(now)
 
     def stat_map(page):
-        rows = get(f"stats/{page}", limit=LIMIT)["stats"]
+        # Breakdowns are extras: if one fails, still report the visit.
+        try:
+            rows = api_get(site, token, f"stats/{page}", limit=LIMIT, **window)["stats"]
+        except ApiError as e:
+            print(f"warning: skipping {page}: {e}")
+            return {}
         return {f"{r.get('id') or ''}\t{r.get('name') or ''}": r["count"]
                 for r in rows}
 
-    hits = get("stats/hits", limit=LIMIT)["hits"]
+    hits = api_get(site, token, "stats/hits", limit=LIMIT, **window)["hits"]
+    pages = {h["path"]: h["count"] for h in hits if not h.get("event")}
     return {
-        "total": get("stats/total")["total"],
-        "pages": {h["path"]: h["count"] for h in hits if not h.get("event")},
+        "total": sum(pages.values()),
+        "pages": pages,
         "titles": {h["path"]: h.get("title") or "" for h in hits},
         "refs": stat_map("toprefs"),
         "locations": stat_map("locations"),
         "systems": stat_map("systems"),
     }
+
+
+def check(site, token, now):
+    """Call each endpoint once and print what came back; posts nothing."""
+    window = window_for(now)
+    calls = [("me", {}), ("stats/hits", {"limit": LIMIT, **window}),
+             ("stats/total", window), ("stats/toprefs", {"limit": LIMIT, **window}),
+             ("stats/locations", {"limit": LIMIT, **window}),
+             ("stats/systems", {"limit": LIMIT, **window}),
+             ("stats/hits", {"limit": LIMIT})]
+    print(f"window: {window['start']} .. {window['end']}")
+    for path, params in calls:
+        label = path + ("" if params.get("start") or path == "me" else " (default window)")
+        try:
+            data = api_get(site, token, path, **params)
+        except ApiError as e:
+            print(f"  FAIL {label}: {e}")
+            continue
+        rows = next((v for v in data.values() if isinstance(v, list)), None)
+        summary = [f"{len(rows)} rows"] if rows is not None else []
+        if "total" in data:
+            summary.append(f"total={data['total']}")
+        print(f"  ok   {label}: {', '.join(summary) or 'ok'}")
 
 
 def increases(old, new):
@@ -152,10 +195,19 @@ def set_output(name, value):
 def main():
     site = env("GOATCOUNTER_SITE")
     token = env("GOATCOUNTER_TOKEN")
+    now = datetime.now(timezone.utc)
+    if "--check" in sys.argv:
+        return check(site, token, now)
+
     webhook = env("DISCORD_WEBHOOK_URL")
+    hook = urllib.parse.urlsplit(webhook)
+    if (os.environ.get("ALLOW_ANY_WEBHOOK") != "1" and
+            (not hook.netloc.endswith(("discord.com", "discordapp.com"))
+             or not hook.path.startswith("/api/webhooks/"))):
+        sys.exit("error: DISCORD_WEBHOOK_URL is not a Discord webhook URL; "
+                 "it should start with https://discord.com/api/webhooks/")
     site_url = env("SITE_URL", "https://choiyoonji.github.io")
     state_file = os.environ.get("STATE_FILE", "visit-state.json")
-    now = datetime.now(timezone.utc)
 
     old = None
     if os.path.exists(state_file):
@@ -182,4 +234,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ApiError as e:
+        sys.exit(f"error: {e}")
