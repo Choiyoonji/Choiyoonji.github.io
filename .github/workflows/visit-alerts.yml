@@ -1,0 +1,47 @@
+# Posts new GoatCounter visits to Discord.
+# Needs two repository secrets: GOATCOUNTER_TOKEN and DISCORD_WEBHOOK_URL.
+name: Visit alerts
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # GitHub's minimum; runs often start a few minutes late
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visit-alerts
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Restore last snapshot
+        uses: actions/cache/restore@v4
+        with:
+          path: visit-state.json
+          key: visit-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: visit-state-
+
+      - name: Check GoatCounter and notify Discord
+        id: check
+        env:
+          GOATCOUNTER_SITE: https://choiyoonji.goatcounter.com
+          SITE_URL: https://choiyoonji.github.io
+          GOATCOUNTER_TOKEN: ${{ secrets.GOATCOUNTER_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python3 .github/scripts/visit_alert.py
+
+      - name: Save snapshot
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: visit-state.json
+          key: visit-state-${{ github.run_id }}-${{ github.run_attempt }}
